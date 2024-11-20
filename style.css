@@ -64,11 +64,11 @@ hr {
 }
 /* Navbar */
 .navbar {
-font-size: 18px;
-top: 0;
-left: 0;
+  font-size: 18px;
+  top: 0;
+  left: 0;
 }
-.navbar-light .navbar-nav .nav-link{
+.navbar-light .navbar-nav .nav-link {
   padding: 0 20px;
   color: black;
   transition: 0.3s ease;
@@ -84,6 +84,11 @@ left: 0;
   padding: 0 7px;
   cursor: pointer;
   transition: 0.3s ease;
+}
+/* Mobile Nav */
+.navbar-light .navbar-toggler {
+  border: none;
+  outline: none;
 }
 /* Section home */
 #home {
