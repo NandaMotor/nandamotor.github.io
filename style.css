@@ -60,11 +60,13 @@ hr {
   background-color: #fb774b;
 }
 .imgnav {
-  width: 70px;
+  width: 175px;
 }
 /* Navbar */
 .navbar {
 font-size: 18px;
+top: 0;
+left: 0;
 }
 .navbar-light .navbar-nav .nav-link{
   padding: 0 20px;
@@ -85,11 +87,16 @@ font-size: 18px;
 }
 /* Section home */
 #home {
-  background-image: ;
+  /* STC */
+  background-image: url(img/IMGMontir.png);
   width: 100%;
   height: 100vh;
   background-size: cover;
-  background-position: top 60px center;
+  background-position: top center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 #home span {
