@@ -85,6 +85,36 @@ hr {
   cursor: pointer;
   transition: 0.3s ease;
 }
+#bar {
+  font-size: 1.5rem;
+  padding: 7px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  color: black;
+}
+#bar:hover,
+#bar.active {
+  color: #ffffff;
+}
+@media only screen and (max-width: 991px){
+  body > nav > div > button:hover,
+  body > nav > div > button:focus{
+    background-color: coral;
+  }
+  body > nav > div > button:hover, #bar
+  body > nav > div > button:focus #bar{
+    color: #ffffff;
+  }
+  #navbarSupportedContent > ul{
+    margin: 1rem;
+    justify-content: flex-end;
+    align-items: flex-end;
+    text-align: right;
+  }
+  #navbarSupportedContent > ul > li:nth-child(n) > a{
+    padding: 10px 0;
+  }
+}
 /* Mobile Nav */
 .navbar-light .navbar-toggler {
   border: none;
