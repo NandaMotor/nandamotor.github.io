@@ -203,3 +203,6 @@ hr {
 .other img{
   transition: 0.3s all;
 }
+.other:hover img{
+  opacity: 0.7;
+}
