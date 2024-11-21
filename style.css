@@ -156,5 +156,17 @@ hr {
 }
 #featured .one:hover .details{
   cursor: pointer;
-  background-color: rgba(255, 44, 44, 0.7);
+  background-color: rgba(71, 172, 255, 0.7);
+}
+#featured .one .details button{
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2a2a2a;
+  background: none;
+  text-transform: uppercase;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 2.5px;
+  transform: translateY(70px);
+  transition: 0.3s ease;
 }
