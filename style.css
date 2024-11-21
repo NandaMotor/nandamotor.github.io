@@ -195,3 +195,11 @@ hr {
   align-items: flex-end;
   text-align: end;
 }
+/* Another Product */
+.other{
+  cursor: pointer;
+  margin-bottom: 2rem;
+}
+.other img{
+  transition: 0.3s all;
+}
