@@ -170,3 +170,7 @@ hr {
   transform: translateY(70px);
   transition: 0.3s ease;
 }
+#featured .one .details button:hover{
+  color: #ffffff;
+  border-bottom: 1px solid #ffffff;
+}
