@@ -181,3 +181,10 @@ hr {
   align-items: flex-start;
   text-align: start;
 }
+#featured .one:nth-child(2) .details {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
