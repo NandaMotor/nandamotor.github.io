@@ -196,13 +196,23 @@ hr {
   text-align: end;
 }
 /* Another Product */
-.other{
+.other {
   cursor: pointer;
   margin-bottom: 2rem;
 }
-.other img{
+.other img {
   transition: 0.3s all;
 }
-.other:hover img{
+.other:hover img {
   opacity: 0.7;
+}
+.other .buy-btn{
+  background-color: coral;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: 0.3s all;
+}
+.other:hover .buy-btn{
+  transform: translateY(0);
+  opacity: 1;
 }
