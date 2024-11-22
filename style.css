@@ -237,3 +237,11 @@ hr {
   justify-content: center;
   align-items: flex-start;
 }
+#banner h4{
+  color: #000000;
+}
+#banner h1{
+  color: #000000;
+}#banner button{
+  background-color: #fb774b;
+}
