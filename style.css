@@ -59,10 +59,10 @@ hr {
   height: 2px;
   background-color: #fb774b;
 }
-.star{
+.star {
   padding: 10px 0;
 }
-.star i{
+.star i {
   font-size: 0.8rem;
   color: goldenrod;
 }
@@ -74,6 +74,7 @@ hr {
   font-size: 18px;
   top: 0;
   left: 0;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 .navbar-light .navbar-nav .nav-link {
   padding: 0 20px;
@@ -217,18 +218,18 @@ hr {
 .other:hover img {
   opacity: 0.7;
 }
-.other .buy-btn{
+.other .buy-btn {
   background-color: coral;
   transform: translateY(20px);
   opacity: 0;
   transition: 0.3s all;
 }
-.other:hover .buy-btn{
+.other:hover .buy-btn {
   transform: translateY(0);
   opacity: 1;
 }
 /* Banner */
-#banner{
+#banner {
   background-image: url(img/Banner_Cat\ Semprot.jpg);
   width: 100%;
   height: 60vh;
@@ -241,12 +242,13 @@ hr {
   justify-content: center;
   align-items: flex-start;
 }
-#banner h4{
+#banner h4 {
   color: #ff4907;
 }
-#banner h1{
+#banner h1 {
   color: #ff4907;
-}#banner button{
+}
+#banner button {
   background-color: #fb774b;
 }
 /* Footer */
