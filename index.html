@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nanda Motor</title>
+
     <!-- Icon -->
     <link rel="shortcut icon" href="ICONandaMotor.ico" type="image/x-icon" />
 
@@ -22,256 +23,74 @@
   </head>
 
   <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3" fixed-top>
-      <div class="container">
-        <img src="img/IMGLogoNandaMotor.png" class="imgnav" alt="">
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span><i id="bar" class="fa-solid fa-bars"></i></span>
+    <nav class="bg-white py-3 shadow-md fixed top-0 left-0 w-full z-50">
+      <div class="container mx-auto flex items-center justify-between px-4 md:px-0">
+        <a href="#" class="flex items-center">
+          <img src="img/IMGLogoNandaMotor.png" class="h-10 md:h-12" alt="Logo Nanda Motor">
+        </a>
+
+        <button id="navbar-toggle" class="md:hidden text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 p-2 rounded-md">
+          <span><i class="fa-solid fa-bars text-xl"></i></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Produk</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Tentang</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Kontak</a>
-            </li>
-            <li class="nav-item">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <i class="fa-solid fa-cart-shopping"></i>
-            </li>
+
+        <div id="navbar-content" class="hidden md:flex flex-col md:flex-row md:items-center md:space-x-8 mt-4 md:mt-0 w-full md:w-auto absolute md:relative top-full left-0 bg-white md:bg-transparent shadow-md md:shadow-none p-4 md:p-0">
+          <ul class="flex flex-col md:flex-row md:space-x-8 space-y-2 md:space-y-0 text-lg md:text-base">
+            <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Home</a></li>
+            <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Produk</a></li>
+            <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Tentang</a></li>
+          </ul>
+
+          <div class="flex items-center space-x-6 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-200 md:border-none">
+            <a href="#" class="text-gray-700 hover:text-blue-600 text-xl"><i class="fa-solid fa-magnifying-glass"></i></a>
+            <a href="#" class="text-gray-700 hover:text-blue-600 text-xl"><i class="fa-solid fa-cart-shopping"></i></a>
+          </div>
         </div>
       </div>
     </nav>
 
-    <!-- Home -->
-    <section id="home">
-      <div class="container">
-        <h5>SELAMAT DATANG</h5>
-        <h1><span>BENGKEL</span> NANDA MOTOR</h1>
-        <p><h4>Sedia/Siap Melayani Spare Parts dan Servis Motor</h4></p>
-        <button>Masuk</button>
-      </div>
-    </section>
-
-    <!-- Brand -->
-    <section id="brand" class="container">
-      <div class="row m-0 py-5">
-        <img class="img-fluid col-lg-2 col-md-4 col-6" src="img/Logo1.png" alt="">
-        <img class="img-fluid col-lg-2 col-md-4 col-6" src="img/Logo1.png" alt="">
-        <img class="img-fluid col-lg-2 col-md-4 col-6" src="img/TAM-X-removebg-preview.png" alt="">
-        <img class="img-fluid col-lg-2 col-md-4 col-6" src="img/Logo1.png" alt="">
-        <img class="img-fluid col-lg-2 col-md-4 col-6" src="img/Logo1.png" alt="">
-        <img class="img-fluid col-lg-2 col-md-4 col-6" src="img/Logo1.png" alt="">
-      </div>
-    </section>
-
-    <!-- Featured (STC) -->
-    <section id="featured" class="w-100">
-      <div class="row p-0 m-0">
-        <div class="one col-lg-4 col-md-12 col-12 p-0">
-          <img class="img-fluid" src="img/PPKucing.jpeg" alt="">
-          <div class="details">
-            <h2>Spareparts</h2>
-            <button class="text-uppercase">Rincian</button>
-          </div>
-        </div>
-        <div class="one col-lg-4 col-md-12 col-12 p-0">
-          <img class="img-fluid" src="img/PPKucing.jpeg" alt="">
-          <div class="details">
-            <h2>Spareparts</h2>
-            <button class="text-uppercase">Rincian</button>
-          </div>
-        </div>
-        <div class="one col-lg-4 col-md-12 col-12 p-0">
-          <img class="img-fluid" src="img/PPKucing.jpeg" alt="">
-          <div class="details">
-            <h2>Spareparts</h2>
-            <button class="text-uppercase">Rincian</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-      <!-- Oli -->
-      <section id="oli" class="my-5 pb-5">
-        <div class="container text-center mt-5 py-5">
-          <h3>Oli</h3>
-          <hr class="mx-auto">
-          <p>Oli di Etalase Bengkel Kami, Jangan Lupa Untuk Cek</p>
-        </div>
-        <div class="row mx-auto container-fluid">
-          <div class="other text-center col-lg-3 col-md-4 col-12">
-            <img class="img-fluid mb-3" src="OLI/Mesin.jpg" alt="">
-            <div class="star">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <h5 class="p-name">Oli Mesin</h5>
-            <h4>Oli Mesin yang ada di Bengkel Kami</h4>
-            <button class="buy-btn">Detail</button>
-          </div>
-          <div class="other text-center col-lg-3 col-md-4 col-12">
-            <img class="img-fluid mb-3" src="OLI/Samping.jpg" alt="">
-            <div class="star">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <h5 class="p-name">Oli Samping</h5>
-            <button class="buy-btn">Detail</button>
-          </div>
-          <div class="other text-center col-lg-3 col-md-4 col-12">
-            <img class="img-fluid mb-3" src="OLI/Gardan.jpg" alt="">
-            <div class="star">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <h5 class="p-name">Oli Gardan</h5>
-            <button class="buy-btn">Detail</button>
-          </div>
+    <main>
+      <section class="relative h-screen bg-cover bg-center flex items-center justify-center text-white" style="background-image: url('img/hero-bg.jpg');">
+        <div class="absolute inset-0 bg-black opacity-60"></div> <div class="container mx-auto text-center z-10 px-4">
+          <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4 animate-fade-in-down">Selamat Datang di Nanda Motor</h1>
+          <p class="text-xl md:text-2xl mb-8 animate-fade-in-up">Solusi Terbaik untuk Perawatan Kendaraan Anda</p>
+          <a href="#layanan" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 animate-bounce-in">Lihat Layanan Kami</a>
         </div>
       </section>
 
-      <!-- Banner -->
-       <section id="banner" class="my-5 py-5">
-        <div class="container">
-          <h4>Kreasikan Gayamu</h4>
-          <h1>Cat Semprot<br>Katalux</h1>
-          <button class="text-uppercase">Beli</button>
+      <section id="about" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4 text-center">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Tentang Nanda Motor</h2>
+          <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
+            Nanda Motor adalah bengkel terpercaya yang berdedikasi menyediakan layanan perawatan dan perbaikan kendaraan dengan kualitas terbaik. Dengan tim mekanik berpengalaman dan peralatan modern, kami siap membantu menjaga performa kendaraan Anda tetap optimal.</p>
+          <a href="#" class="mt-8 inline-block text-blue-600 hover:text-blue-800 font-semibold transition duration-300">Baca Selengkapnya</a>
         </div>
-       </section>
+      </section>
 
-       <!-- Ban -->
-       <section id="ban" class="my-5">
-        <div class="container text-center mt-5 py-5">
-          <h3>Ban</h3>
-          <hr class="mx-auto">
-          <p>Produk andalan di Bengkel Kami, Jangan Lupa Untuk Cek</p>
+      <section id="layanan" class="py-16 bg-white">
+        <div class="container mx-auto px-4 text-center">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-10">Layanan Unggulan Kami</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+              <i class="fa-solid fa-car-battery text-5xl text-blue-600 mb-4"></i>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Servis Umum</h3>
+              <p class="text-gray-600">Perawatan rutin untuk menjaga performa kendaraan Anda.</p>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+              <i class="fa-solid fa-wrench text-5xl text-blue-600 mb-4"></i>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Perbaikan Mesin</h3>
+              <p class="text-gray-600">Diagnosa dan perbaikan masalah mesin yang akurat.</p>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+              <i class="fa-solid fa-tire text-5xl text-blue-600 mb-4"></i>
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Ganti Oli & Ban</h3>
+              <p class="text-gray-600">Layanan cepat dan profesional untuk oli dan ban.</p>
+            </div>
+          </div>
+          <a href="#" class="mt-12 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">Lihat Semua Layanan</a>
         </div>
-        <div class="row mx-auto container-fluid">
-          <div class="other text-center col-lg-3 col-md-4 col-12">
-            <img class="img-fluid mb-3" src="img/PL_Oli Mesran.jpg" alt="">
-            <div class="star">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <h5 class="p-name">Oli Mesin</h5>
-            <h4 class="p-price">Rp 45.000</h4>
-            <button class="buy-btn">Beli</button>
-          </div>
-          <div class="other text-center col-lg-3 col-md-4 col-12">
-            <img class="img-fluid mb-3" src="img/PL_Oli Federal.jpg" alt="">
-            <div class="star">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <h5 class="p-name">Oli Mesin</h5>
-            <h4 class="p-price">Rp 45.000</h4>
-            <button class="buy-btn">Beli</button>
-          </div>
-          <div class="other text-center col-lg-3 col-md-4 col-12">
-            <img class="img-fluid mb-3" src="img/PL_Oli Yamalube.jpg" alt="">
-            <div class="star">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <h5 class="p-name">Oli Mesin</h5>
-            <h4 class="p-price">Rp 45.000</h4>
-            <button class="buy-btn">Beli</button>
-          </div>
-          <div class="other text-center col-lg-3 col-md-4 col-12">
-            <img class="img-fluid mb-3" src="img/Buku.jpg" alt="">
-            <div class="star">
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <h5 class="p-name">Oli Mesin</h5>
-            <h4 class="p-price">Rp 45.000</h4>
-            <button class="buy-btn">Beli</button>
-          </div>
-        </div>
-       </section>
+      </section>
+    </main>
 
-       <!-- Footer -->
-       <footer class="mt-5 py-5">
-        <div class="row container mx-auto pt-5">
-          <div class="footer-one col-lg-3 col-md-6 col-12">
-            <img src="img/IMGLogoNandaMotor.png" class="imgnav" alt="">
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic provident aliquid perspiciatis, numquam facilis quam porro! Veniam est et exercitationem quos magnam nisi veritatis natus officia nam. Veniam, iure ex!</p>
-          </div>
-          <div class="footer-one col-lg-3 col-md-6 col-12">
-            <h5 class="pb-2">Fitur</h5>
-            <ul class="text-uppercase list-unstyled">
-              <li><a href="#">sparepart</a></li>
-              <li><a href="#">sparepart</a></li>
-              <li><a href="#">sparepart</a></li>
-              <li><a href="#">sparepart</a></li>
-            </ul>
-          </div>
-          <div class="footer-one col-lg-3 col-md-6 col-12">
-            <h5 class="pb-2">Kontak</h5>
-            <div>
-              <h6 class="text-uppercase">Alamat</h6>
-              <p></p>
-            </div>
-            <div>
-              <h6 class="text-uppercase">No. HP</h6>
-              <p></p>
-            </div>
-            <div>
-              <h6 class="text-uppercase">Email</h6>
-              <p></p>
-            </div>
-          </div>
-          <!-- STC -->
-          <div class="footer-one col-lg-3 col-md-6 col-12">
-            <h5 class="pb-2">Foto</h5>
-              <div class="row">
-                <img class="img-fluid w-25 h-100 m-2" src="" alt="">
-                <img class="img-fluid w-25 h-100 m-2" src="" alt="">
-                <img class="img-fluid w-25 h-100 m-2" src="" alt="">
-                <img class="img-fluid w-25 h-100 m-2" src="" alt="">
-              </div>
-          </div>
-        </div>
-        <div class="copyright" mt-5>
-          <div class="row container mx-auto">
-            <div class="col-lg-3 col-md-6 col-12 text-nowrap">
-              <p>&copy; 2024 Nanda Motor | Nanda Septiana Ramadhani | 714240033</p>
-            </div>
-          </div>
-        </div>
-       </footer>
-       
     <!-- JS -->
     <script
       src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"
