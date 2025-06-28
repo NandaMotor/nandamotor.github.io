@@ -10,8 +10,8 @@
     <link rel="shortcut icon" href="ICONandaMotor.ico" type="image/x-icon" />
 
     <!-- Font Awsome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" integrity="sha512-9xKTRVabjVeZmc+GUW8GgSmcREDunMM+Dt/GrzchfN8tkwHizc5RP4Ok/MXFFy5rIjJjzhndFScTceq5e6GvVQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -36,8 +36,8 @@
         <div id="navbar-content" class="hidden md:flex flex-col md:flex-row md:items-center md:space-x-8 mt-4 md:mt-0 w-full md:w-auto absolute md:relative top-full left-0 bg-white md:bg-transparent shadow-md md:shadow-none p-4 md:p-0">
           <ul class="flex flex-col md:flex-row md:space-x-8 space-y-2 md:space-y-0 text-lg md:text-base">
             <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Home</a></li>
-            <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Produk</a></li>
             <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Tentang</a></li>
+            <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Produk</a></li>
           </ul>
 
           <div class="flex items-center space-x-6 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-200 md:border-none">
@@ -49,44 +49,55 @@
     </nav>
 
     <main>
-      <section class="relative h-screen bg-cover bg-center flex items-center justify-center text-white" style="background-image: url('img/hero-bg.jpg');">
+      <section class="relative h-screen bg-cover bg-center flex items-center justify-center text-white" style="background-image: url('img/IMGBack.jpg');">
         <div class="absolute inset-0 bg-black opacity-60"></div> <div class="container mx-auto text-center z-10 px-4">
-          <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4 animate-fade-in-down">Selamat Datang di Nanda Motor</h1>
-          <p class="text-xl md:text-2xl mb-8 animate-fade-in-up">Solusi Terbaik untuk Perawatan Kendaraan Anda</p>
-          <a href="#layanan" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 animate-bounce-in">Lihat Layanan Kami</a>
+          <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4 animate-fade-in-down">Nanda Motor: Spesialis Perawatan Motor Anda</h1>
+          <p class="text-xl md:text-2xl mb-8 animate-fade-in-up">Performa Optimal, Perjalanan Aman, dan Gaya Khas Anda</p>
+          <a href="#layanan" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105 animate-bounce-in">
+            Temukan Layanan Terbaik
+          </a>
         </div>
       </section>
 
       <section id="about" class="py-16 bg-gray-50">
         <div class="container mx-auto px-4 text-center">
           <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Tentang Nanda Motor</h2>
-          <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Nanda Motor adalah bengkel terpercaya yang berdedikasi menyediakan layanan perawatan dan perbaikan kendaraan dengan kualitas terbaik. Dengan tim mekanik berpengalaman dan peralatan modern, kami siap membantu menjaga performa kendaraan Anda tetap optimal.</p>
+                
+          <div class="mb-8 md:flex md:items-center md:justify-center md:space-x-8">
+            <img src="img/about-motor-pic.jpg" alt="Bengkel Motor Nanda Motor" class="w-full md:w-1/2 lg:w-1/3 mx-auto rounded-lg shadow-lg mb-4 md:mb-0">
+              <div>
+                <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed text-left md:text-center">
+                  Nanda Motor adalah bengkel motor terpercaya yang berdedikasi menyediakan layanan perawatan dan perbaikan motor dengan kualitas terbaik. Dengan tim mekanik berpengalaman dan peralatan modern, kami siap membantu menjaga performa motor Anda tetap optimal dan aman di jalan.
+                </p>
+              </div>
+            </div>
           <a href="#" class="mt-8 inline-block text-blue-600 hover:text-blue-800 font-semibold transition duration-300">Baca Selengkapnya</a>
         </div>
       </section>
 
       <section id="layanan" class="py-16 bg-white">
         <div class="container mx-auto px-4 text-center">
-          <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-10">Layanan Unggulan Kami</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              <i class="fa-solid fa-car-battery text-5xl text-blue-600 mb-4"></i>
-              <h3 class="text-xl font-semibold text-gray-800 mb-2">Servis Umum</h3>
-              <p class="text-gray-600">Perawatan rutin untuk menjaga performa kendaraan Anda.</p>
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-10">Layanan Unggulan Kami untuk Motor</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+                <i class="fa-solid fa-motorcycle text-5xl text-blue-600 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Servis Rutin Motor</h3>
+                <p class="text-gray-600">Perawatan berkala untuk menjaga performa dan ketahanan motor Anda.</p>
+              </div>
+              <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+                <i class="fa-solid fa-screwdriver-wrench text-5xl text-blue-600 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Perbaikan Mesin Motor</h3>
+                <p class="text-gray-600">Diagnosa cermat dan perbaikan mesin motor oleh ahli.</p>
+              </div>
+              <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
+                <i class="fa-solid fa-oil-can text-5xl text-blue-600 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Ganti Oli & Ban Motor</h3>
+                <p class="text-gray-600">Layanan penggantian oli dan ban motor yang cepat dan tepat.</p>
+              </div>
             </div>
-            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              <i class="fa-solid fa-wrench text-5xl text-blue-600 mb-4"></i>
-              <h3 class="text-xl font-semibold text-gray-800 mb-2">Perbaikan Mesin</h3>
-              <p class="text-gray-600">Diagnosa dan perbaikan masalah mesin yang akurat.</p>
-            </div>
-            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              <i class="fa-solid fa-tire text-5xl text-blue-600 mb-4"></i>
-              <h3 class="text-xl font-semibold text-gray-800 mb-2">Ganti Oli & Ban</h3>
-              <p class="text-gray-600">Layanan cepat dan profesional untuk oli dan ban.</p>
-            </div>
-          </div>
-          <a href="#" class="mt-12 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">Lihat Semua Layanan</a>
+          <a href="#" class="mt-12 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 transform hover:scale-105">
+            Lihat Semua Layanan Motor
+          </a>
         </div>
       </section>
     </main>
