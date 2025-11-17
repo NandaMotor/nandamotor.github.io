@@ -6,19 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nanda Motor | Produk</title>
 
-    <link rel="shortcut icon" href="ICONandaMotor.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="assets/ICONandaMotor.ico" type="image/x-icon" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link rel="stylesheet" href="style.css"/>
-    <link rel="stylesheet" href="croot.css">
-
-    <meta name="description" content="CrootSS: CSS Mobile Friendly Responsive Component and Template." />
-    <meta name="keywords" content="CrootSS, CSS, Template, Responsive, Template, Vanilla, html, CSS lib" />
-    <meta property="og:image" content="/crootss.png" />
-    <meta property="og:title" content="CrootSS: CSS Mobile Friendly Responsive Component and Template" />
+    <meta name="description" content="Lihat produk-produk unggulan di Bengkel Nanda Motor." />
+    <meta property="og:title" content="Produk - Nanda Motor" />
 
     <script type="module" src="https://cdn.jsdelivr.net/gh/domyid/tracker@main/index.js"></script>
   </head>
@@ -27,7 +22,7 @@
     <nav class="bg-white py-3 shadow-md fixed top-0 left-0 w-full z-50">
       <div class="container mx-auto flex items-center justify-between px-4 md:px-0">
         <a href="index.html" class="flex items-center">
-          <img src="img/IMGLogoNandaMotor.png" class="h-10 md:h-12" alt="Logo Nanda Motor">
+          <img src="assets/IMG/IMGLogoNandaMotor.png" class="h-10 md:h-12" alt="Logo Nanda Motor">
         </a>
 
         <button id="navbar-toggle" class="md:hidden text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 p-2 rounded-md">
@@ -38,7 +33,7 @@
           <ul class="flex flex-col md:flex-row md:space-x-8 space-y-2 md:space-y-0 text-lg md:text-base">
             <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="index.html">Home</a></li>
             <li><a class="text-blue-600 font-semibold transition duration-300" href="produk.html">Produk</a></li>
-            <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="#">Tentang</a></li>
+            <li><a class="text-gray-700 hover:text-blue-600 font-semibold transition duration-300" href="index.html#about">Tentang</a></li>
           </ul>
 
           <div class="flex items-center space-x-6 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-200 md:border-none">
@@ -50,7 +45,8 @@
     </nav>
 
     <main>
-      <section id="oli" class="pt-24 pb-16 bg-gray-50"> <div class="container mx-auto px-4 text-center">
+      <section id="oli" class="pt-24 pb-16 bg-gray-50"> 
+        <div class="container mx-auto px-4 text-center">
           <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Oli</h2>
           <hr class="w-24 border-t-2 border-gray-300 mx-auto mb-6">
           <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
@@ -60,7 +56,7 @@
         
         <div class="container mx-auto px-4 mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <img src="https://via.placeholder.com/300x300" alt="Produk Oli" class="w-full h-48 object-cover">
+            <img src="assets/OLI/OM_Mesran SAE 40.jpg" alt="Mesran SAE" class="w-full h-48 object-cover">
             <div class="p-6">
               <h3 class="text-xl font-semibold text-gray-800 mb-2">Nama Produk Oli</h3>
               <p class="text-gray-600 mb-4">Deskripsi singkat produk...</p>
@@ -68,14 +64,13 @@
             </div>
           </div>
           </div>
-
       </section>
     </main>
 
     <footer class="bg-gray-800 text-gray-300 py-16">
       <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
         <div>
-          <img src="img/IMGLogoNandaMotor.png" class="h-10 mb-4" alt="Logo Nanda Motor">
+          <img src="assets/IMG/IMGLogoNandaMotor.png" class="h-10 mb-4" alt="Logo Nanda Motor">
           <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic provident aliquid perspiciatis, numquam facilis quam porro!</p>
         </div>
 
@@ -98,12 +93,10 @@
             </div>
             <div>
               <h6 class="text-xs font-semibold uppercase text-gray-400">No. HP</h6>
-              <p>(+62) </p>
-            </div>
+              <p>(+62) 8</p> </div>
             <div>
               <h6 class="text-xs font-semibold uppercase text-gray-400">Email</h6>
-              <p></p>
-            </div>
+              <p>@gmail.com</p> </div>
           </div>
         </div>
 
@@ -133,10 +126,9 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-HLGLQVMRYT');
     </script>
 
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
   </body>
 </html>
