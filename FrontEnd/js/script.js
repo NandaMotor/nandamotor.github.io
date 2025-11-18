@@ -67,8 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmPasswordField.addEventListener('keyup', validatePassword);
     }
 
+    // Form register
     const registerFormElement = document.querySelector('#register-form form');
-
     if (registerFormElement) {
         registerFormElement.addEventListener('submit', async function(e) {
             e.preventDefault(); // Mencegah halaman refresh sendiri
@@ -130,6 +130,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 alert("⚠️ Terjadi kesalahan koneksi ke server.");
                 document.getElementById('register-submit-btn').disabled = false;
+            }
+        });
+    }
+
+    // Form login
+    const loginFormElement = document.querySelector('#login-form form');
+    if (loginFormElement) {
+        loginFormElement.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email-login').value;
+            const password = document.getElementById('password-login').value;
+            const loginBtn = loginFormElement.querySelector('button');
+
+            try {
+                // Ubah tombol jadi loading
+                loginBtn.innerText = "Memproses...";
+                loginBtn.disabled = true;
+
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+                
+                // Kembalikan tombol
+                loginBtn.innerText = "Login";
+                loginBtn.disabled = false;
+
+                if (response.ok) {
+                    // === LOGIN SUKSES ===
+                    alert("🎉 " + result.message);
+
+                    // 1. Simpan Token ke LocalStorage (Browser)
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('role', result.role);
+
+                    // 2. Cek Role untuk Pengalihan Halaman (Redirect)
+                    if (result.role === 'admin') {
+                        // HAPUS alert lama, dan BUKA komentar ini:
+                        alert("Login Berhasil! Selamat datang Admin.");
+                        window.location.href = 'admin.html'; 
+                    } else {
+                        // Jika User biasa, arahkan ke home
+                        window.location.href = 'index.html';
+                    }
+
+                } else {
+                    // === LOGIN GAGAL ===
+                    alert("❌ " + result.message);
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("⚠️ Gagal terhubung ke server.");
+                loginBtn.innerText = "Login";
+                loginBtn.disabled = false;
             }
         });
     }
