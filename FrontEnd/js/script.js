@@ -67,4 +67,71 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmPasswordField.addEventListener('keyup', validatePassword);
     }
 
+    const registerFormElement = document.querySelector('#register-form form');
+
+    if (registerFormElement) {
+        registerFormElement.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Mencegah halaman refresh sendiri
+
+            // 1. Ambil data dari input
+            const nama = document.getElementById('nama-register').value;
+            const email = document.getElementById('email-register').value;
+            const password = document.getElementById('password-register').value;
+            const confirmPassword = document.getElementById('password-confirm-register').value;
+
+            // 2. Validasi (Cek Password sekali lagi)
+            if (password !== confirmPassword) {
+                alert("Password tidak cocok!");
+                return;
+            }
+
+            // 3. Kirim data ke BackEnd (Node.js)
+            try {
+                // Tampilkan loading (opsional, agar user tahu sedang proses)
+                const submitBtn = document.getElementById('register-submit-btn');
+                const originalText = submitBtn.innerText;
+                submitBtn.innerText = "Memproses...";
+                submitBtn.disabled = true;
+
+                const response = await fetch('http://localhost:3000/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nama: nama,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                // Kembalikan tombol seperti semula
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+
+                if (response.ok) {
+                    // Jika Sukses (Status 201)
+                    alert("🎉 BERHASIL: " + result.message);
+                    
+                    // Otomatis pindah ke tampilan Login
+                    document.getElementById('register-form').classList.add('hidden');
+                    document.getElementById('login-form').classList.remove('hidden');
+                    
+                    // Kosongkan form
+                    registerFormElement.reset();
+                } else {
+                    // Jika Gagal (Misal email sudah ada)
+                    alert("❌ GAGAL: " + result.message);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert("⚠️ Terjadi kesalahan koneksi ke server.");
+                document.getElementById('register-submit-btn').disabled = false;
+            }
+        });
+    }
+
 });
