@@ -1,115 +1,480 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard | Nanda Motor</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <style>
+      /* Jangan tampilkan tombol putar (spin button) */
+      /* Untuk Chrome, Safari, Edge, Opera */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
 
     <script>
-        // 1. Cek apakah Token ada?
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
+      // 1. Cek apakah Token ada?
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
 
-        // 2. Jika tidak ada token atau bukan admin, tendang ke login
-        if (!token || role !== 'admin') {
-            alert('⛔ Akses Ditolak! Anda harus login sebagai Admin.');
-            window.location.href = 'login.html';
-        }
+      // 2. Jika tidak ada token atau bukan admin, tendang ke login
+      if (!token || role !== "admin") {
+        alert("⛔ Akses Ditolak! Anda harus login sebagai Admin.");
+        window.location.href = "login.html";
+      }
 
-        // 3. Fungsi Logout
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            window.location.href = 'login.html';
-        }
+      // 3. Fungsi Logout
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        window.location.href = "login.html";
+      }
     </script>
-</head>
-<body class="bg-gray-100">
+  </head>
 
+  <body class="bg-gray-100">
     <div class="flex h-screen">
-        <aside class="w-64 bg-gray-800 text-white flex flex-col">
-            <div class="p-6 text-center border-b border-gray-700">
-                <h1 class="text-2xl font-bold text-blue-400">Nanda Motor</h1>
-                <p class="text-sm text-gray-400">Admin Panel</p>
-            </div>
-            
-            <nav class="flex-1 p-4 space-y-2">
-                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 bg-blue-600 hover:bg-blue-700">
-                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-                </a>
-                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
-                    <i class="fas fa-box mr-2"></i> Manajemen Produk
-                </a>
-                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
-                    <i class="fas fa-users mr-2"></i> Data Pengguna
-                </a>
-                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
-                    <i class="fas fa-file-invoice-dollar mr-2"></i> Laporan Transaksi
-                </a>
-            </nav>
-
-            <div class="p-4 border-t border-gray-700">
-                <button onclick="logout()" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded text-white transition">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                </button>
-            </div>
-        </aside>
-
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="bg-white shadow p-4 flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-800">Dashboard Overview</h2>
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Halo, Admin</span>
-                    <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">A</div>
-                </div>
-            </header>
-
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
-                                <i class="fas fa-box fa-2x"></i>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">Total Produk</p>
-                                <p class="text-2xl font-bold text-gray-800">0</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
-                                <i class="fas fa-users fa-2x"></i>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">Total User</p>
-                                <p class="text-2xl font-bold text-gray-800">1</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-yellow-500">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4">
-                                <i class="fas fa-shopping-cart fa-2x"></i>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">Pesanan Baru</p>
-                                <p class="text-2xl font-bold text-gray-800">0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow p-6 h-64 flex items-center justify-center text-gray-400">
-                    <p>Area Konten Manajemen (Tabel akan muncul di sini)</p>
-                </div>
-            </main>
+      <aside class="w-64 bg-gray-800 text-white flex flex-col">
+        <div class="p-6 text-center border-b border-gray-700">
+          <h1 class="text-2xl font-bold text-blue-400">Nanda Motor</h1>
+          <p class="text-sm text-gray-400">Admin Panel</p>
         </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+          <a
+            href="#"
+            class="block py-2.5 px-4 rounded transition duration-200 bg-blue-600 hover:bg-blue-700"
+          >
+            <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+          </a>
+          <a
+            href="#"
+            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700"
+          >
+            <i class="fas fa-box mr-2"></i> Manajemen Produk
+          </a>
+          <a
+            href="#"
+            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700"
+          >
+            <i class="fas fa-users mr-2"></i> Data Pengguna
+          </a>
+          <a
+            href="#"
+            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700"
+          >
+            <i class="fas fa-file-invoice-dollar mr-2"></i> Laporan Transaksi
+          </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-700">
+          <button
+            onclick="logout()"
+            class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded text-white transition"
+          >
+            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+          </button>
+        </div>
+      </aside>
+
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header class="bg-white shadow p-4 flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-gray-800">
+            Dashboard Overview
+          </h2>
+          <div class="flex items-center space-x-4">
+            <span class="text-gray-600">Halo, Admin</span>
+            <div
+              class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold"
+            >
+              A
+            </div>
+          </div>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div
+              class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500"
+            >
+              <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
+                  <i class="fas fa-box fa-2x"></i>
+                </div>
+                <div>
+                  <p class="text-gray-500">Total Produk</p>
+                  <p class="text-2xl font-bold text-gray-800">0</p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500"
+            >
+              <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
+                  <i class="fas fa-users fa-2x"></i>
+                </div>
+                <div>
+                  <p class="text-gray-500">Total User</p>
+                  <p class="text-2xl font-bold text-gray-800">1</p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white p-6 rounded-lg shadow border-l-4 border-yellow-500"
+            >
+              <div class="flex items-center">
+                <div
+                  class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4"
+                >
+                  <i class="fas fa-shopping-cart fa-2x"></i>
+                </div>
+                <div>
+                  <p class="text-gray-500">Pesanan Baru</p>
+                  <p class="text-2xl font-bold text-gray-800">0</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div
+              class="p-4 border-b border-gray-200 flex justify-between items-center"
+            >
+              <h3 class="font-bold text-gray-800">Daftar Produk</h3>
+              <button
+                onclick="bukaModal()"
+                class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+              >
+                + Tambah Produk
+              </button>
+            </div>
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr
+                  class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal"
+                >
+                  <th class="py-3 px-6">ID</th>
+                  <th class="py-3 px-6">Nama Produk</th>
+                  <th class="py-3 px-6">Kategori</th>
+                  <th class="py-3 px-6">Harga</th>
+                  <th class="py-3 px-6">Stok</th>
+                  <th class="py-3 px-6 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody
+                id="tabel-produk-body"
+                class="text-gray-600 text-sm font-light"
+              ></tbody>
+            </table>
+          </div>
+        </main>
+      </div>
     </div>
 
-</body>
+    <div
+      id="modalTambah"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50"
+    >
+      <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-gray-800">
+          Tambah Produk Baru
+        </h2>
+
+        <form id="formTambahProduk">
+          <input type="hidden" id="editIdInput" />
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2"
+              >Nama Produk</label
+            >
+            <input
+              type="text"
+              id="namaInput"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
+          </div>
+
+          <div class="flex gap-4 mb-4">
+            <div class="w-1/2">
+              <label class="block text-gray-700 text-sm font-bold mb-2"
+                >Harga (Rp)</label
+              >
+              <input
+                type="number"
+                id="hargaInput"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+            </div>
+            <div class="w-1/2">
+              <label class="block text-gray-700 text-sm font-bold mb-2"
+                >Stok</label
+              >
+              <input
+                type="number"
+                id="stokInput"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2"
+              >Kategori</label
+            >
+            <select
+              id="kategoriInput"
+              class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            >
+              <option value="Oli">Oli</option>
+              <option value="Ban">Ban</option>
+              <option value="Sparepart">Sparepart</option>
+              <option value="Service">Service</option>
+            </select>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button
+              type="button"
+              onclick="tutupModal()"
+              class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      async function loadProducts() {
+        try {
+          // Panggil API BackEnd
+          const response = await fetch("http://localhost:3000/api/products");
+          const products = await response.json();
+
+          const tabelBody = document.getElementById("tabel-produk-body");
+          tabelBody.innerHTML = ""; // Kosongkan tabel dulu
+
+          // 1. SIAPKAN PENGHITUNG (COUNTER)
+          let kategoriCounter = {};
+
+          // 2. Balik urutan data (agar yang lama dihitung duluan sebagai 001)
+          const productsSorted = products.reverse();
+
+          // 3. LOOP DATA
+          productsSorted.forEach((produk) => {
+            // LOGIKA PREFIX
+            let prefix = "GEN";
+            let kat = produk.kategori;
+
+            if (kat === "Oli") prefix = "OLI";
+            else if (kat === "Ban") prefix = "BAN";
+            else if (kat === "Sparepart") prefix = "SPR";
+            else if (kat === "Service") prefix = "SRV";
+
+            // LOGIKA PENGHITUNG OTOMATIS
+            if (!kategoriCounter[kat]) {
+              kategoriCounter[kat] = 0;
+            }
+
+            kategoriCounter[kat]++; // Tambah 1 ke hitungan
+
+            // Buat ID Tampilan
+            const displayID = `${prefix}-${String(
+              kategoriCounter[kat]
+            ).padStart(3, "0")}`;
+
+            // Buat Baris Tabel
+            const row = `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="py-3 px-6 font-bold text-blue-600">
+                            ${displayID} 
+                        </td>
+                        <td class="py-3 px-6">${produk.nama_produk}</td>
+                        <td class="py-3 px-6"><span class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-xs">${
+                          produk.kategori
+                        }</span></td>
+                        <td class="py-3 px-6">Rp ${produk.harga.toLocaleString(
+                          "id-ID"
+                        )}</td>
+                        <td class="py-3 px-6 font-bold ${
+                          produk.stok < 5 ? "text-red-500" : "text-green-600"
+                        }">${produk.stok}</td>
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex item-center justify-center">
+                                <button onclick="editProduk(${
+                                  produk.id
+                                })" class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="hapusProduk(${
+                                  produk.id
+                                })" class="w-4 transform hover:text-red-500 hover:scale-110">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+            // Masukkan baris ke tabel (di paling atas)
+            tabelBody.insertAdjacentHTML("afterbegin", row);
+          });
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Gagal mengambil data produk");
+        }
+      }
+
+      // LOGIKA MODAL
+      const modal = document.getElementById("modalTambah");
+      const modalTitle = document.getElementById("modalTitle");
+      const editIdInput = document.getElementById("editIdInput");
+
+      // Fungsi Buka Modal (Mode Tambah)
+      function bukaModal() {
+        modal.classList.remove("hidden");
+        // Reset Form agar bersih
+        document.getElementById("formTambahProduk").reset();
+        editIdInput.value = ""; // Pastikan ID kosong
+        modalTitle.innerText = "Tambah Produk Baru"; // Judul Mode Tambah
+      }
+
+      // 2. FUNGSI EDIT PRODUK (Mode Edit)
+      async function editProduk(id) {
+        try {
+          // Ambil data produk dari BackEnd
+          const response = await fetch(
+            `http://localhost:3000/api/products/${id}`
+          );
+          const produk = await response.json();
+
+          // Isi form dengan data produk
+          document.getElementById("namaInput").value = produk.nama_produk;
+          document.getElementById("hargaInput").value = produk.harga;
+          document.getElementById("stokInput").value = produk.stok;
+          document.getElementById("kategoriInput").value = produk.kategori;
+
+          // PENTING: Isi input rahasia dengan ID
+          editIdInput.value = produk.id;
+
+          // Ubah Judul & Buka Modal
+          modalTitle.innerText = "Edit Produk";
+          modal.classList.remove("hidden");
+        } catch (error) {
+          alert("Gagal mengambil data edit.");
+        }
+      }
+
+      function tutupModal() {
+        modal.classList.add("hidden");
+      }
+
+      // 3. LOGIKA SIMPAN (Bisa Tambah atau Update)
+      document
+        .getElementById("formTambahProduk")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const id = editIdInput.value; // Cek apakah ada ID?
+          const dataProduk = {
+            nama_produk: document.getElementById("namaInput").value,
+            harga: document.getElementById("hargaInput").value,
+            stok: document.getElementById("stokInput").value,
+            kategori: document.getElementById("kategoriInput").value,
+          };
+
+          try {
+            let url, method;
+
+            if (id) {
+              // JIKA ADA ID = MODE UPDATE (PUT)
+              url = `http://localhost:3000/api/products/${id}`;
+              method = "PUT";
+            } else {
+              // JIKA TIDAK ADA ID = MODE TAMBAH (POST)
+              url = "http://localhost:3000/api/products";
+              method = "POST";
+            }
+
+            // Kirim ke BackEnd
+            const response = await fetch(url, {
+              method: method,
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(dataProduk),
+            });
+
+            if (response.ok) {
+              alert(
+                id
+                  ? "Produk berhasil diupdate!"
+                  : "Produk berhasil ditambahkan!"
+              );
+              tutupModal();
+              loadProducts(); // Refresh tabel
+            } else {
+              alert("Gagal menyimpan produk.");
+            }
+          } catch (error) {
+            console.error(error);
+            alert("Terjadi kesalahan koneksi.");
+          }
+        });
+
+      // LOGIKA HAPUS PRODUK
+      async function hapusProduk(id) {
+        // 1. Tanya yakin atau tidak?
+        const konfirmasi = confirm(
+          "Apakah Anda yakin ingin menghapus produk ini?"
+        );
+
+        if (konfirmasi) {
+          try {
+            // 2. Kirim perintah DELETE ke BackEnd
+            const response = await fetch(
+              `http://localhost:3000/api/products/${id}`,
+              {
+                method: "DELETE",
+              }
+            );
+
+            if (response.ok) {
+              alert("Produk berhasil dihapus!");
+              loadProducts(); // Refresh tabel otomatis
+
+              // (Opsional) Update angka di dashboard jika mau
+              // loadDashboardStats();
+            } else {
+              alert("Gagal menghapus produk.");
+            }
+          } catch (error) {
+            console.error(error);
+            alert("Terjadi kesalahan koneksi.");
+          }
+        }
+      }
+
+      // Jalankan fungsi ini saat halaman selesai dimuat
+      document.addEventListener("DOMContentLoaded", loadProducts);
+    </script>
+  </body>
 </html>
