@@ -164,8 +164,9 @@
                 <tr
                   class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal"
                 >
-                  <th class="py-3 px-6">ID</th>
-                  <th class="py-3 px-6">Nama Produk</th>
+                    <th class="py-3 px-6">ID</th>
+                    <th class="py-3 px-6">Gambar</th>
+                    <th class="py-3 px-6">Nama Produk</th>
                   <th class="py-3 px-6">Kategori</th>
                   <th class="py-3 px-6">Harga</th>
                   <th class="py-3 px-6">Stok</th>
@@ -245,6 +246,12 @@
             </select>
           </div>
 
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Produk</label>
+            <input type="file" id="gambarInput" accept="image/*" class="block w-full text-sm text-gray-700" />
+            <img id="imagePreview" src="" alt="Preview" class="mt-3 max-h-40 hidden rounded" />
+          </div>
+
           <div class="flex justify-end gap-2">
             <button
               type="button"
@@ -309,7 +316,10 @@
                         <td class="py-3 px-6 font-bold text-blue-600">
                             ${displayID} 
                         </td>
-                        <td class="py-3 px-6">${produk.nama_produk}</td>
+                  <td class="py-3 px-6">
+                    ${produk.gambar ? `<img src="${produk.gambar}" alt="${produk.nama_produk}" class="h-12 w-12 object-cover rounded"/>` : `<div class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">No Image</div>`}
+                  </td>
+                  <td class="py-3 px-6">${produk.nama_produk}</td>
                         <td class="py-3 px-6"><span class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-xs">${
                           produk.kategori
                         }</span></td>
@@ -357,6 +367,14 @@
         document.getElementById("formTambahProduk").reset();
         editIdInput.value = ""; // Pastikan ID kosong
         modalTitle.innerText = "Tambah Produk Baru"; // Judul Mode Tambah
+        // Sembunyikan preview gambar dan reset input file
+        const imagePreview = document.getElementById('imagePreview');
+        const gambarInput = document.getElementById('gambarInput');
+        if (imagePreview) {
+          imagePreview.src = '';
+          imagePreview.classList.add('hidden');
+        }
+        if (gambarInput) gambarInput.value = '';
       }
 
       // 2. FUNGSI EDIT PRODUK (Mode Edit)
@@ -377,6 +395,19 @@
           // PENTING: Isi input rahasia dengan ID
           editIdInput.value = produk.id;
 
+          // Tampilkan preview gambar jika ada
+          const imagePreview = document.getElementById('imagePreview');
+          const gambarInput = document.getElementById('gambarInput');
+          if (produk.gambar) {
+            imagePreview.src = produk.gambar;
+            imagePreview.classList.remove('hidden');
+          } else {
+            imagePreview.src = '';
+            imagePreview.classList.add('hidden');
+          }
+          // Reset file input
+          gambarInput.value = '';
+
           // Ubah Judul & Buka Modal
           modalTitle.innerText = "Edit Produk";
           modal.classList.remove("hidden");
@@ -394,14 +425,22 @@
         .getElementById("formTambahProduk")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
-
           const id = editIdInput.value; // Cek apakah ada ID?
-          const dataProduk = {
-            nama_produk: document.getElementById("namaInput").value,
-            harga: document.getElementById("hargaInput").value,
-            stok: document.getElementById("stokInput").value,
-            kategori: document.getElementById("kategoriInput").value,
-          };
+          const nama = document.getElementById("namaInput").value;
+          const harga = document.getElementById("hargaInput").value;
+          const stok = document.getElementById("stokInput").value;
+          const kategori = document.getElementById("kategoriInput").value;
+          const fileInput = document.getElementById('gambarInput');
+
+          // Build FormData to support file upload
+          const formData = new FormData();
+          formData.append('nama_produk', nama);
+          formData.append('harga', harga);
+          formData.append('stok', stok);
+          formData.append('kategori', kategori);
+          if (fileInput && fileInput.files && fileInput.files[0]) {
+            formData.append('gambar', fileInput.files[0]);
+          }
 
           try {
             let url, method;
@@ -416,23 +455,26 @@
               method = "POST";
             }
 
-            // Kirim ke BackEnd
+            // Kirim FormData (browser akan set Content-Type multipart/form-data)
             const response = await fetch(url, {
               method: method,
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(dataProduk),
+              body: formData,
             });
 
             if (response.ok) {
-              alert(
-                id
-                  ? "Produk berhasil diupdate!"
-                  : "Produk berhasil ditambahkan!"
-              );
+              alert(id ? "Produk berhasil diupdate!" : "Produk berhasil ditambahkan!");
+              // Reset form & preview
+              document.getElementById('formTambahProduk').reset();
+              const imagePreview = document.getElementById('imagePreview');
+              imagePreview.src = '';
+              imagePreview.classList.add('hidden');
+
               tutupModal();
               loadProducts(); // Refresh tabel
             } else {
-              alert("Gagal menyimpan produk.");
+              const errText = await response.text();
+              console.error('Server error:', errText);
+              alert('Gagal menyimpan produk.');
             }
           } catch (error) {
             console.error(error);
@@ -474,6 +516,22 @@
       }
 
       // Jalankan fungsi ini saat halaman selesai dimuat
+      // Preview saat memilih file
+      const gambarInputEl = document.getElementById('gambarInput');
+      if (gambarInputEl) {
+        gambarInputEl.addEventListener('change', function () {
+          const preview = document.getElementById('imagePreview');
+          const file = this.files && this.files[0];
+          if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+          } else {
+            preview.src = '';
+            preview.classList.add('hidden');
+          }
+        });
+      }
+
       document.addEventListener("DOMContentLoaded", loadProducts);
     </script>
   </body>

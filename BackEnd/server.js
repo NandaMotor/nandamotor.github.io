@@ -3,6 +3,9 @@ const express = require("express");
 const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
 
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "rahasia_nanda_motor_123";
@@ -14,6 +17,27 @@ const PORT = 3000; // Menjalankan server di Port 3000
 // 3. Middleware
 app.use(cors());
 app.use(express.json());
+
+// Multer memory storage untuk meng-handle upload file sebelum dikirim ke Cloudinary
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (/^image\/(png|jpe?g|webp|gif)$/.test(file.mimetype)) cb(null, true);
+    else cb(new Error('Only image files are allowed'), false);
+  }
+});
+
+// Konfigurasi Cloudinary (gunakan CLOUDINARY_URL jika tersedia, atau variabel terpisah)
+if (process.env.CLOUDINARY_URL) {
+  cloudinary.config({ url: process.env.CLOUDINARY_URL });
+} else {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
 
 // 4. Buat Koneksi Pool ke Database MySQL
 const db = mysql
@@ -36,6 +60,35 @@ async function testDbConnection() {
   }
 }
 testDbConnection(); // Jalankan fungsi tes koneksi
+
+// Pastikan kolom gambar dan public_id ada di tabel products (lebih kompatibel)
+(async function ensureProductImageColumns() {
+  try {
+    const dbName = process.env.DB_NAME || 'nanda_motor_db';
+
+    // Cek kolom 'gambar'
+    const [gambarRows] = await db.query(
+      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'products' AND COLUMN_NAME = 'gambar'`,
+      [dbName]
+    );
+    if (gambarRows[0].cnt === 0) {
+      await db.query("ALTER TABLE products ADD COLUMN gambar VARCHAR(255) NULL");
+      console.log('✅ Kolom `gambar` ditambahkan ke tabel products.');
+    }
+
+    // Cek kolom 'public_id'
+    const [publicRows] = await db.query(
+      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'products' AND COLUMN_NAME = 'public_id'`,
+      [dbName]
+    );
+    if (publicRows[0].cnt === 0) {
+      await db.query("ALTER TABLE products ADD COLUMN public_id VARCHAR(255) NULL");
+      console.log('✅ Kolom `public_id` ditambahkan ke tabel products.');
+    }
+  } catch (err) {
+    console.warn('⚠️ Gagal memastikan kolom gambar/public_id secara otomatis. Jika perlu, tambahkan kolom secara manual:', err.message);
+  }
+})();
 
 // 6. Definisikan "Rute" (Routes)
 app.get("/", (req, res) => {
@@ -140,7 +193,8 @@ app.get("/api/products", async (req, res) => {
 });
 
 // RUTE TAMBAH PRODUK (CREATE)
-app.post("/api/products", async (req, res) => {
+// RUTE TAMBAH PRODUK (meng-handle upload gambar ke Cloudinary)
+app.post("/api/products", upload.single('gambar'), async (req, res) => {
   const { nama_produk, harga, stok, kategori } = req.body;
 
   // Validasi sederhana
@@ -149,14 +203,26 @@ app.post("/api/products", async (req, res) => {
   }
 
   try {
-    // Simpan ke database
-    const sql =
-      "INSERT INTO products (nama_produk, harga, stok, kategori, gambar) VALUES (?, ?, ?, ?, ?)";
-    const values = [nama_produk, harga, stok, kategori, "default.jpg"];
+    let gambarUrl = null;
+    let publicId = null;
+
+    if (req.file) {
+      const dataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      const uploadResult = await cloudinary.uploader.upload(dataUri, {
+        folder: 'nanda_motor_products',
+        resource_type: 'image'
+      });
+      gambarUrl = uploadResult.secure_url;
+      publicId = uploadResult.public_id;
+    }
+
+    // Simpan ke database (gambar dan public_id boleh null)
+    const sql = "INSERT INTO products (nama_produk, harga, stok, kategori, gambar, public_id) VALUES (?, ?, ?, ?, ?, ?)";
+    const values = [nama_produk, harga, stok, kategori || null, gambarUrl, publicId];
 
     await db.query(sql, values);
 
-    res.status(201).json({ message: "Produk berhasil ditambahkan!" });
+    res.status(201).json({ message: "Produk berhasil ditambahkan!", gambar: gambarUrl });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Gagal menambah produk." });
@@ -191,15 +257,51 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 // RUTE UPDATE PRODUK (PUT)
-app.put('/api/products/:id', async (req, res) => {
+// RUTE UPDATE PRODUK (meng-handle optional penggantian gambar)
+app.put('/api/products/:id', upload.single('gambar'), async (req, res) => {
   const { id } = req.params;
   const { nama_produk, harga, stok, kategori } = req.body;
 
   try {
-    const sql = 'UPDATE products SET nama_produk = ?, harga = ?, stok = ?, kategori = ? WHERE id = ?';
-    await db.query(sql, [nama_produk, harga, stok, kategori, id]);
-    res.json({ message: 'Produk berhasil diupdate!' });
+    let gambarUrl = null;
+    let publicId = null;
+
+    // Jika ada file baru, unggah ke Cloudinary
+    if (req.file) {
+      // Ambil public_id lama untuk dihapus (opsional)
+      try {
+        const [rows] = await db.query('SELECT public_id FROM products WHERE id = ?', [id]);
+        if (rows && rows.length > 0 && rows[0].public_id) {
+          const oldPublicId = rows[0].public_id;
+          // Hapus file lama di Cloudinary (tidak fatal jika gagal)
+          try { await cloudinary.uploader.destroy(oldPublicId); } catch (e) { /* ignore */ }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      const dataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      const uploadResult = await cloudinary.uploader.upload(dataUri, {
+        folder: 'nanda_motor_products',
+        resource_type: 'image'
+      });
+      gambarUrl = uploadResult.secure_url;
+      publicId = uploadResult.public_id;
+    }
+
+    let sql, params;
+    if (gambarUrl) {
+      sql = `UPDATE products SET nama_produk=?, harga=?, stok=?, kategori=?, gambar=?, public_id=? WHERE id=?`;
+      params = [nama_produk, harga, stok, kategori, gambarUrl, publicId, id];
+    } else {
+      sql = `UPDATE products SET nama_produk=?, harga=?, stok=?, kategori=? WHERE id=?`;
+      params = [nama_produk, harga, stok, kategori, id];
+    }
+
+    await db.query(sql, params);
+    res.json({ message: 'Produk berhasil diupdate!', gambar: gambarUrl });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Gagal mengupdate produk' });
   }
 });
