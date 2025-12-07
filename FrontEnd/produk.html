@@ -106,33 +106,19 @@
     </nav>
 
     <main>
-      <section id="oli" class="pt-24 pb-16 bg-gray-50">
+      <section id="oli" class="pt-24 pb-16 bg-gray-50"> 
         <div class="container mx-auto px-4 text-center">
-          <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Oli</h2>
-          <hr class="w-24 border-t-2 border-gray-300 mx-auto mb-6" />
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Katalog Produk</h2>
+          <hr class="w-24 border-t-2 border-gray-300 mx-auto mb-6">
           <p class="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Oli di Etalase Bengkel Kami, Jangan Lupa Untuk Cek
+            Stok terbaru langsung dari gudang kami.
           </p>
         </div>
-
-        <div
-          class="container mx-auto px-4 mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
-        >
-          <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <img
-              src="assets/OLI/OM_Mesran SAE 40.jpg"
-              alt="Mesran SAE"
-              class="w-full h-48 object-cover"
-            />
-            <div class="p-6">
-              <h3 class="text-xl font-semibold text-gray-800 mb-2">
-                Nama Produk Oli
-              </h3>
-              <p class="text-gray-600 mb-4">Deskripsi singkat produk...</p>
-              <span class="text-2xl font-bold text-blue-600">Rp 50.000</span>
-            </div>
-          </div>
+        
+        <div id="daftar-produk-container" class="container mx-auto px-4 mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <p class="text-center col-span-full text-gray-500">Memuat produk...</p>
         </div>
+
       </section>
     </main>
 
@@ -257,6 +243,70 @@
     </script>
 
     <script src="js/script.js"></script>
+
+    <script>
+      async function tampilkanProduk() {
+        const container = document.getElementById('daftar-produk-container');
+        
+        try {
+          const response = await fetch('http://localhost:3000/api/products');
+          const products = await response.json();
+
+          container.innerHTML = '';
+
+          if (products.length === 0) {
+            container.innerHTML = '<p class="text-center col-span-full text-gray-500">Belum ada produk yang tersedia.</p>';
+            return;
+          }
+
+          products.forEach(produk => {
+            const hargaRupiah = parseInt(produk.harga).toLocaleString('id-ID');
+  
+            const gambar = produk.gambar || 'https://via.placeholder.com/300x300?text=No+Image';
+
+            const cardHTML = `
+              <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
+                <div class="relative h-48 overflow-hidden bg-gray-100">
+                    <img src="${gambar}" alt="${produk.nama_produk}" class="w-full h-full object-cover">
+                    <span class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-2 py-1 m-2 rounded">
+                        ${produk.kategori}
+                    </span>
+                </div>
+                
+                <div class="p-6">
+                  <h3 class="text-xl font-bold text-gray-800 mb-2 truncate" title="${produk.nama_produk}">
+                    ${produk.nama_produk}
+                  </h3>
+                  
+                  <div class="mb-4 text-sm">
+                    ${produk.stok > 0 
+                      ? `<span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> Stok Tersedia (${produk.stok})</span>` 
+                      : `<span class="text-red-500 font-semibold"><i class="fas fa-times-circle"></i> Stok Habis</span>`
+                    }
+                  </div>
+
+                  <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold text-blue-600">Rp ${hargaRupiah}</span>
+                    <button class="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full transition">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', cardHTML);
+          });
+
+        } catch (error) {
+          console.error("Gagal mengambil produk:", error);
+          container.innerHTML = '<p class="text-center col-span-full text-red-500">Gagal memuat produk. Pastikan server menyala.</p>';
+        }
+      }
+
+      // Jalankan fungsi saat halaman dimuat
+      document.addEventListener('DOMContentLoaded', tampilkanProduk);
+    </script>
 
   </body>
 </html>
