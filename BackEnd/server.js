@@ -9,6 +9,7 @@ require('dotenv').config();
 
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "rahasia_nanda_motor_123";
+const WEBHOOK_SECRET = 'sLUB3cnOW5Vwj2yGlMPKRykryokyp0j0';
 
 // 2. Buat aplikasi Express
 const app = express();
@@ -17,6 +18,74 @@ const PORT = 3000; // Menjalankan server di Port 3000
 // 3. Middleware
 app.use(cors());
 app.use(express.json());
+
+// Middleware untuk validasi webhook
+function validateWebhookSecret(req, res, next) {
+    const secret = req.headers['x-webhook-secret'];
+    if (secret !== WEBHOOK_SECRET) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+}
+
+app.post('/api/whatsapp/send-reply', validateWebhookSecret, async (req, res) => {
+    try {
+        const { from, message, messageId } = req.body;
+
+        if (!from || !message) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Normalisasi pesan
+        const msgLower = message.toLowerCase().trim();
+        let replyText = '';
+
+        // Auto-reply berdasarkan keyword
+        if (msgLower.includes('oli') || msgLower.includes('oil')) {
+            const [products] = await db.query(
+                "SELECT nama_produk, harga, stok FROM products WHERE kategori = 'Oli' AND stok > 0 LIMIT 5"
+            );
+            if (products.length > 0) {
+                replyText = '🛢️ *Daftar Oli Tersedia:*\n\n';
+                products.forEach((p, i) => {
+                    replyText += `${i + 1}. ${p.nama_produk}\n   Harga: Rp ${p.harga.toLocaleString('id-ID')}\n   Stok: ${p.stok}\n\n`;
+                });
+                replyText += 'Silakan hubungi admin untuk pemesanan.';
+            } else {
+                replyText = 'Maaf, stok oli sedang kosong.';
+            }
+        } else if (msgLower.includes('harga') || msgLower.includes('price')) {
+            replyText = 'Silakan sebutkan produk yang ingin Anda tanyakan harganya. Contoh: "harga oli merah"';
+        } else if (msgLower.includes('stok') || msgLower.includes('stock')) {
+            replyText = 'Silakan sebutkan produk yang ingin dicek stoknya.';
+        } else if (msgLower.includes('katalog') || msgLower.includes('produk')) {
+            const [count] = await db.query("SELECT COUNT(*) as total FROM products WHERE stok > 0");
+            replyText = `Kami memiliki ${count[0].total} produk tersedia.\n\nKategori:\n- Oli\n- Ban\n- Sparepart\n- Service\n\nBalas dengan nama kategori untuk melihat produk.`;
+        } else {
+            // Default reply
+            replyText = `Halo! Selamat datang di Nanda Motor 🏍️\n\nBalas dengan:\n- "oli" untuk lihat produk oli\n- "katalog" untuk lihat semua kategori\n- "harga [produk]" untuk tanya harga\n\nAdmin kami siap melayani Anda.`;
+        }
+
+        // Simpan log pesan (opsional)
+        try {
+            await db.query(
+                "INSERT INTO whatsapp_logs (from_number, message, reply, created_at) VALUES (?, ?, ?, NOW())",
+                [from, message, replyText]
+            );
+        } catch (logErr) {
+            console.warn('Gagal simpan log WhatsApp:', logErr.message);
+        }
+
+        res.json({
+            success: true,
+            reply: replyText,
+            to: from
+        });
+    } catch (error) {
+        console.error('Error webhook WhatsApp:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // Multer memory storage untuk meng-handle upload file sebelum dikirim ke Cloudinary
 const upload = multer({
