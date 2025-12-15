@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const WhatsAppBot = require('./whatsapp-bot');
 require('dotenv').config();
 
 const jwt = require("jsonwebtoken");
@@ -27,6 +28,55 @@ function validateWebhookSecret(req, res, next) {
     }
     next();
 }
+
+// Endpoint untuk chat dengan owner via WhatsApp
+app.post('/api/whatsapp/contact-owner', async (req, res) => {
+    try {
+        const { sessionId, customerName, message } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        if (!waBot) {
+            return res.status(503).json({ 
+                error: 'WhatsApp Bot tidak aktif',
+                message: 'Silakan hubungi admin via WhatsApp langsung: +62 853-1462-7451'
+            });
+        }
+
+        // Forward pesan ke owner via WhatsApp
+        const ownerMsg = `📨 *Pesan dari Website*\n\nNama: ${customerName || 'Anonymous'}\nSession: ${sessionId}\nPesan: ${message}\n\n_Balas di chat ini atau via dashboard admin_`;
+        const waClient = waBot.getClient();
+        
+        if (!waClient || !waClient.info) {
+            return res.status(503).json({ 
+                error: 'WhatsApp belum terhubung',
+                message: 'Owner sedang offline. Silakan coba lagi nanti.'
+            });
+        }
+
+        await waBot.sendToCustomer('6285314627451@c.us', ownerMsg);
+
+        // Simpan ke database
+        await db.query(
+            "INSERT INTO whatsapp_logs (from_number, message, reply, source, created_at) VALUES (?, ?, ?, 'website', NOW())",
+            [sessionId, message, 'Forwarded to owner']
+        );
+
+        res.json({
+            success: true,
+            message: 'Pesan Anda telah diteruskan ke owner. Owner akan membalas via WhatsApp.',
+            ownerNumber: '+62 853-1462-7451'
+        });
+    } catch (error) {
+        console.error('Error forwarding to owner:', error);
+        res.status(500).json({ 
+            error: 'Failed to send message',
+            message: 'Silakan hubungi langsung via WhatsApp: +62 853-1462-7451'
+        });
+    }
+});
 
 app.post('/api/whatsapp/send-reply', validateWebhookSecret, async (req, res) => {
     try {
@@ -129,6 +179,15 @@ async function testDbConnection() {
   }
 }
 testDbConnection(); // Jalankan fungsi tes koneksi
+
+// Initialize WhatsApp Bot
+let waBot = null;
+try {
+  waBot = new WhatsAppBot(db);
+  console.log('🤖 WhatsApp Bot diinisialisasi...');
+} catch (error) {
+  console.warn('⚠️ WhatsApp Bot tidak aktif:', error.message);
+}
 
 // Pastikan kolom gambar dan public_id ada di tabel products (lebih kompatibel)
 (async function ensureProductImageColumns() {
