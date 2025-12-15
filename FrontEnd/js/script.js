@@ -1,110 +1,102 @@
 document.addEventListener("DOMContentLoaded", function () {
+  /* =========================================
+     1. LOGIKA NAVBAR TOGGLE (MOBILE)
+     ========================================= */
   const navbarToggle = document.getElementById("navbar-toggle");
   const navbarContent = document.getElementById("navbar-content");
 
   if (navbarToggle && navbarContent) {
     navbarToggle.addEventListener("click", function () {
-      navbarContent.classList.toggle("hidden"); // Menambah/menghapus class 'hidden'
-      navbarContent.classList.toggle("flex"); // Mengganti display dari 'hidden' ke 'flex' atau sebaliknya
+      navbarContent.classList.toggle("hidden");
+      navbarContent.classList.toggle("flex");
     });
   }
 
+  /* =========================================
+     2. LOGIKA PINDAH REGISTER <-> LOGIN
+     ========================================= */
   const loginForm = document.getElementById("login-form");
   const registerForm = document.getElementById("register-form");
   const showRegisterBtn = document.getElementById("show-register-btn");
   const showLoginBtn = document.getElementById("show-login-btn");
 
-  // Cek jika tombol 'Daftar di sini' ada
   if (showRegisterBtn) {
     showRegisterBtn.addEventListener("click", function (e) {
-      e.preventDefault(); // Mencegah link pindah halaman
-      loginForm.classList.add("hidden"); // Sembunyikan form login
-      registerForm.classList.remove("hidden"); // Tampilkan form daftar
+      e.preventDefault();
+      if (loginForm) loginForm.classList.add("hidden");
+      if (registerForm) registerForm.classList.remove("hidden");
     });
   }
 
-  // Cek jika tombol 'Login di sini' ada
   if (showLoginBtn) {
     showLoginBtn.addEventListener("click", function (e) {
-      e.preventDefault(); // Mencegah link pindah halaman
-      loginForm.classList.remove("hidden"); // Tampilkan form login
-      registerForm.classList.add("hidden"); // Sembunyikan form daftar
+      e.preventDefault();
+      if (loginForm) loginForm.classList.remove("hidden");
+      if (registerForm) registerForm.classList.add("hidden");
     });
   }
 
-  // Ambil elemen untuk validasi password
+  /* =========================================
+     3. VALIDASI PASSWORD REAL-TIME
+     ========================================= */
   const passwordField = document.getElementById("password-register");
-  const confirmPasswordField = document.getElementById(
-    "password-confirm-register"
-  );
+  const confirmPasswordField = document.getElementById("password-confirm-register");
   const errorMessage = document.getElementById("password-error-msg");
   const registerButton = document.getElementById("register-submit-btn");
 
-  // Pastikan kita berada di halaman login (elemen-elemennya ada)
   if (passwordField && confirmPasswordField && errorMessage && registerButton) {
-    // Buat fungsi untuk memvalidasi
     function validatePassword() {
       if (passwordField.value !== confirmPasswordField.value) {
-        // Jika password tidak cocok
         errorMessage.textContent = "Password tidak cocok.";
-        errorMessage.classList.remove("hidden"); // Tampilkan pesan error
-
-        // Nonaktifkan tombol submit
+        errorMessage.classList.remove("hidden");
         registerButton.disabled = true;
         registerButton.classList.add("opacity-50", "cursor-not-allowed");
       } else {
-        // Jika password cocok
         errorMessage.textContent = "";
-        errorMessage.classList.add("hidden"); // Sembunyikan pesan error
-
-        // Aktifkan tombol submit
+        errorMessage.classList.add("hidden");
         registerButton.disabled = false;
         registerButton.classList.remove("opacity-50", "cursor-not-allowed");
       }
     }
-
-    // Jalankan fungsi validasi setiap kali pengguna mengetik
     passwordField.addEventListener("keyup", validatePassword);
     confirmPasswordField.addEventListener("keyup", validatePassword);
   }
 
-  // Form register
+  /* =========================================
+     4. SUBMIT REGISTER
+     ========================================= */
   const registerFormElement = document.querySelector("#register-form form");
   if (registerFormElement) {
     registerFormElement.addEventListener("submit", async function (e) {
-      e.preventDefault(); // Mencegah halaman refresh sendiri
+      e.preventDefault();
 
-      // 1. Ambil data dari input
       const nama = document.getElementById("nama-register").value;
       const email = document.getElementById("email-register").value;
       const password = document.getElementById("password-register").value;
-      const confirmPassword = document.getElementById(
-        "password-confirm-register"
-      ).value;
+      const confirmPassword = document.getElementById("password-confirm-register").value;
 
+      // Validasi Email
       if (!email.endsWith("@gmail.com")) {
         alert("❌ Maaf, hanya email @gmail.com yang diperbolehkan!");
-        return; // Berhenti di sini, jangan kirim ke server
+        return;
       }
 
-      // 2. Validasi (Cek Password sekali lagi)
+      // Validasi Password Match
       if (password !== confirmPassword) {
         alert("Password tidak cocok!");
         return;
       }
 
-      // grecaptcha adalah objek dari script Google yang kita pasang di HTML
-      const captchaResponse = grecaptcha.getResponse();
-
-      if (captchaResponse.length === 0) {
-        // Jika panjang respon 0, berarti user belum mencentang
-        alert("⚠️ Harap centang CAPTCHA 'Saya bukan robot'!");
-        return; // Stop proses, jangan kirim ke server
+      // Validasi Captcha
+      if (typeof grecaptcha !== 'undefined') {
+          const captchaResponse = grecaptcha.getResponse();
+          if (captchaResponse.length === 0) {
+            alert("⚠️ Harap centang CAPTCHA 'Saya bukan robot'!");
+            return;
+          }
       }
 
-      // 3. Kirim data ke BackEnd (Node.js)
       try {
-        // Tampilkan loading
         const submitBtn = document.getElementById("register-submit-btn");
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "Memproses...";
@@ -112,45 +104,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const response = await fetch("http://localhost:3000/api/register", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nama: nama,
-            email: email,
-            password: password,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama, email, password }),
         });
 
         const result = await response.json();
-
-        // Kembalikan tombol seperti semula
         submitBtn.innerText = originalText;
         submitBtn.disabled = false;
 
         if (response.ok) {
-          // Jika Sukses (Status 201)
           alert("🎉 BERHASIL: " + result.message);
-
-          // Otomatis pindah ke tampilan Login
           document.getElementById("register-form").classList.add("hidden");
           document.getElementById("login-form").classList.remove("hidden");
-
-          // Kosongkan form
           registerFormElement.reset();
         } else {
-          // Jika Gagal (Misal email sudah ada)
           alert("❌ GAGAL: " + result.message);
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error Register:", error);
         alert("⚠️ Terjadi kesalahan koneksi ke server.");
         document.getElementById("register-submit-btn").disabled = false;
       }
     });
   }
 
-  // Form login
+  /* =========================================
+     5. SUBMIT LOGIN
+     ========================================= */
   const loginFormElement = document.querySelector("#login-form form");
   if (loginFormElement) {
     loginFormElement.addEventListener("submit", async function (e) {
@@ -161,7 +141,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const loginBtn = document.getElementById("btn-login-submit");
 
       try {
-        // Ubah tombol jadi loading
         loginBtn.innerText = "Memproses...";
         loginBtn.disabled = true;
 
@@ -172,34 +151,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         const result = await response.json();
-
-        // Kembalikan tombol
         loginBtn.innerText = "Login";
         loginBtn.disabled = false;
 
         if (response.ok) {
-          // === LOGIN SUKSES ===
           alert("🎉 " + result.message);
-
-          // 1. Simpan Token ke LocalStorage (Browser)
           localStorage.setItem("token", result.token);
           localStorage.setItem("role", result.role);
 
-          // 2. Cek Role untuk Pengalihan Halaman (Redirect)
-          // Jika User Admin, arahkan ke menu admin
           if (result.role === "admin") {
-            alert("Login Berhasil! Selamat datang Admin.");
             window.location.href = "admin.html";
           } else {
-            // Jika User biasa, arahkan ke home
             window.location.href = "index.html";
           }
         } else {
-          // === LOGIN GAGAL ===
           alert("❌ " + result.message);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error Login:", error);
         alert("⚠️ Gagal terhubung ke server.");
         loginBtn.innerText = "Login";
         loginBtn.disabled = false;
@@ -207,88 +176,72 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  /* =========================================
+     6. PASSWORD TOGGLE (ICON MATA)
+     ========================================= */
   function setupPasswordToggle(buttonId, inputId) {
     const toggleBtn = document.getElementById(buttonId);
     const inputField = document.getElementById(inputId);
-
-    // Cek apakah elemennya ada di halaman ini?
     if (toggleBtn && inputField) {
       toggleBtn.addEventListener("click", function () {
-        // 1. Cek tipe saat ini (password atau text?)
-        const type =
-          inputField.getAttribute("type") === "password" ? "text" : "password";
-
-        // 2. Ubah tipe input
+        const type = inputField.getAttribute("type") === "password" ? "text" : "password";
         inputField.setAttribute("type", type);
-
-        // 3. Ubah Ikon (Mata Terbuka <-> Mata Dicoret)
+        
         const icon = this.querySelector("i");
-        if (type === "text") {
-          // Jika jadi teks (terlihat), ubah ikon jadi mata dicoret
-          icon.classList.remove("fa-eye");
-          icon.classList.add("fa-eye-slash");
-        } else {
-          // Jika jadi password (tersembunyi), ubah ikon jadi mata biasa
-          icon.classList.remove("fa-eye-slash");
-          icon.classList.add("fa-eye");
+        if (icon) {
+            if (type === "text") {
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+            } else {
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+            }
         }
       });
     }
   }
 
-  // 1. Untuk Form Login
   setupPasswordToggle("toggle-password-login", "password-login");
-
-  // 2. Untuk Form Register (Password Utama)
   setupPasswordToggle("toggle-password-register", "password-register");
-
-  // 3. Untuk Form Register (Konfirmasi Password)
   setupPasswordToggle("toggle-confirm-password", "password-confirm-register");
 
+  /* =========================================
+     7. CEK STATUS LOGIN (UBAH TOMBOL NAVBAR)
+     ========================================= */
   function cekStatusLoginNavbar() {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
     const navBtn = document.getElementById("navbar-login-btn");
 
-    // Jika tombol navbar ditemukan (agar tidak error di halaman yang tidak ada navbarnya)
     if (navBtn) {
-      // JIKA ADA TOKEN (SUDAH LOGIN)
       if (token) {
-        // 1. Ubah tulisan jadi 'Logout'
+        // --- SUDAH LOGIN ---
         navBtn.innerText = "Logout";
-
-        // 2. Ubah warna jadi Merah (Visual feedback)
         navBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
         navBtn.classList.add("bg-red-600", "hover:bg-red-700");
-
-        // 3. Ubah Link (agar tidak ke halaman login lagi)
         navBtn.href = "#";
 
-        // 4. Tambahkan fungsi Logout saat diklik
-        navBtn.addEventListener("click", function (e) {
-          e.preventDefault();
+        // Reset Event Listener (agar tidak double)
+        const newBtn = navBtn.cloneNode(true);
+        navBtn.parentNode.replaceChild(newBtn, navBtn);
 
-          // Konfirmasi logout
+        newBtn.addEventListener("click", function (e) {
+          e.preventDefault();
           if (confirm("Apakah Anda yakin ingin keluar?")) {
-            // Hapus data dari penyimpanan
             localStorage.removeItem("token");
             localStorage.removeItem("role");
-
-            // Refresh halaman agar kembali ke kondisi 'Login'
             window.location.href = "index.html";
           }
         });
       } else {
-        // JIKA BELUM LOGIN (KONDISI DEFAULT)
+        // --- BELUM LOGIN ---
         navBtn.innerText = "Login";
         navBtn.href = "login.html";
-        // Kembalikan warna biru
         navBtn.classList.add("bg-blue-600", "hover:bg-blue-700");
         navBtn.classList.remove("bg-red-600", "hover:bg-red-700");
       }
     }
   }
 
-  // Jalankan fungsi ini saat halaman selesai dimuat
-  document.addEventListener("DOMContentLoaded", cekStatusLoginNavbar);
+  // Jalankan Cek Login
+  cekStatusLoginNavbar();
 });

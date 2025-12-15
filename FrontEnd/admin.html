@@ -19,25 +19,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     />
-
-    <script>
-      // 1. Cek apakah Token ada?
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
-
-      // 2. Jika tidak ada token atau bukan admin, tendang ke login
-      if (!token || role !== "admin") {
-        alert("⛔ Akses Ditolak! Anda harus login sebagai Admin.");
-        window.location.href = "login.html";
-      }
-
-      // 3. Fungsi Logout
-      function logout() {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        window.location.href = "login.html";
-      }
-    </script>
   </head>
 
   <body class="bg-gray-100">
@@ -162,9 +143,9 @@
                 <tr
                   class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal"
                 >
-                    <th class="py-3 px-6">ID</th>
-                    <th class="py-3 px-6">Gambar</th>
-                    <th class="py-3 px-6">Nama Produk</th>
+                  <th class="py-3 px-6">ID</th>
+                  <th class="py-3 px-6">Gambar</th>
+                  <th class="py-3 px-6">Nama Produk</th>
                   <th class="py-3 px-6">Kategori</th>
                   <th class="py-3 px-6">Harga</th>
                   <th class="py-3 px-6">Stok</th>
@@ -247,8 +228,9 @@
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Produk</label>
             <input type="file" id="gambarInput" accept="image/*" class="block w-full text-sm text-gray-700" />
-            <img id="imagePreview" src="" alt="Preview" class="mt-3 max-h-40 hidden rounded" />
-          </div>
+            <img id="imgPreview" src="" alt="Preview" class="mt-3 max-h-40 hidden rounded" />
+            <div id="previewContainer" class="hidden"></div> 
+            </div>
 
           <div class="flex justify-end gap-2">
             <button
@@ -269,268 +251,6 @@
       </div>
     </div>
 
-    <script>
-      async function loadProducts() {
-        try {
-          // Panggil API BackEnd
-          const response = await fetch("http://localhost:3000/api/products");
-          const products = await response.json();
-
-          const tabelBody = document.getElementById("tabel-produk-body");
-          tabelBody.innerHTML = ""; // Kosongkan tabel dulu
-
-          // 1. SIAPKAN PENGHITUNG (COUNTER)
-          let kategoriCounter = {};
-
-          // 2. Balik urutan data (agar yang lama dihitung duluan sebagai 001)
-          const productsSorted = products.reverse();
-
-          // 3. LOOP DATA
-          productsSorted.forEach((produk) => {
-            // LOGIKA PREFIX
-            let prefix = "GEN";
-            let kat = produk.kategori;
-
-            if (kat === "Oli") prefix = "OLI";
-            else if (kat === "Ban") prefix = "BAN";
-            else if (kat === "Sparepart") prefix = "SPR";
-            else if (kat === "Service") prefix = "SRV";
-
-            // LOGIKA PENGHITUNG OTOMATIS
-            if (!kategoriCounter[kat]) {
-              kategoriCounter[kat] = 0;
-            }
-
-            kategoriCounter[kat]++; // Tambah 1 ke hitungan
-
-            // Buat ID Tampilan
-            const displayID = `${prefix}-${String(
-              kategoriCounter[kat]
-            ).padStart(3, "0")}`;
-
-            // Buat Baris Tabel
-            const row = `
-                    <tr class="border-b border-gray-200 hover:bg-gray-50">
-                        <td class="py-3 px-6 font-bold text-blue-600">
-                            ${displayID} 
-                        </td>
-                  <td class="py-3 px-6">
-                    ${produk.gambar ? `<img src="${produk.gambar}" alt="${produk.nama_produk}" class="h-12 w-12 object-cover rounded"/>` : `<div class="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">No Image</div>`}
-                  </td>
-                  <td class="py-3 px-6">${produk.nama_produk}</td>
-                        <td class="py-3 px-6"><span class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-xs">${
-                          produk.kategori
-                        }</span></td>
-                        <td class="py-3 px-6">Rp ${produk.harga.toLocaleString(
-                          "id-ID"
-                        )}</td>
-                        <td class="py-3 px-6 font-bold ${
-                          produk.stok < 5 ? "text-red-500" : "text-green-600"
-                        }">${produk.stok}</td>
-                        <td class="py-3 px-6 text-center">
-                            <div class="flex item-center justify-center">
-                                <button onclick="editProduk(${
-                                  produk.id
-                                })" class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="hapusProduk(${
-                                  produk.id
-                                })" class="w-4 transform hover:text-red-500 hover:scale-110">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-
-            // Masukkan baris ke tabel (di paling atas)
-            tabelBody.insertAdjacentHTML("afterbegin", row);
-          });
-        } catch (error) {
-          console.error("Error:", error);
-          alert("Gagal mengambil data produk");
-        }
-      }
-
-      // LOGIKA MODAL
-      const modal = document.getElementById("modalTambah");
-      const modalTitle = document.getElementById("modalTitle");
-      const editIdInput = document.getElementById("editIdInput");
-
-      // Fungsi Buka Modal (Mode Tambah)
-      function bukaModal() {
-        modal.classList.remove("hidden");
-        // Reset Form agar bersih
-        document.getElementById("formTambahProduk").reset();
-        editIdInput.value = ""; // Pastikan ID kosong
-        modalTitle.innerText = "Tambah Produk Baru"; // Judul Mode Tambah
-        // Sembunyikan preview gambar dan reset input file
-        const imagePreview = document.getElementById('imagePreview');
-        const gambarInput = document.getElementById('gambarInput');
-        if (imagePreview) {
-          imagePreview.src = '';
-          imagePreview.classList.add('hidden');
-        }
-        if (gambarInput) gambarInput.value = '';
-      }
-
-      // 2. FUNGSI EDIT PRODUK (Mode Edit)
-      async function editProduk(id) {
-        try {
-          // Ambil data produk dari BackEnd
-          const response = await fetch(
-            `http://localhost:3000/api/products/${id}`
-          );
-          const produk = await response.json();
-
-          // Isi form dengan data produk
-          document.getElementById("namaInput").value = produk.nama_produk;
-          document.getElementById("hargaInput").value = produk.harga;
-          document.getElementById("stokInput").value = produk.stok;
-          document.getElementById("kategoriInput").value = produk.kategori;
-
-          // PENTING: Isi input rahasia dengan ID
-          editIdInput.value = produk.id;
-
-          // Tampilkan preview gambar jika ada
-          const imagePreview = document.getElementById('imagePreview');
-          const gambarInput = document.getElementById('gambarInput');
-          if (produk.gambar) {
-            imagePreview.src = produk.gambar;
-            imagePreview.classList.remove('hidden');
-          } else {
-            imagePreview.src = '';
-            imagePreview.classList.add('hidden');
-          }
-          // Reset file input
-          gambarInput.value = '';
-
-          // Ubah Judul & Buka Modal
-          modalTitle.innerText = "Edit Produk";
-          modal.classList.remove("hidden");
-        } catch (error) {
-          alert("Gagal mengambil data edit.");
-        }
-      }
-
-      function tutupModal() {
-        modal.classList.add("hidden");
-      }
-
-      // 3. LOGIKA SIMPAN (Bisa Tambah atau Update)
-      document
-        .getElementById("formTambahProduk")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-          const id = editIdInput.value; // Cek apakah ada ID?
-          const nama = document.getElementById("namaInput").value;
-          const harga = document.getElementById("hargaInput").value;
-          const stok = document.getElementById("stokInput").value;
-          const kategori = document.getElementById("kategoriInput").value;
-          const fileInput = document.getElementById('gambarInput');
-
-          // Build FormData to support file upload
-          const formData = new FormData();
-          formData.append('nama_produk', nama);
-          formData.append('harga', harga);
-          formData.append('stok', stok);
-          formData.append('kategori', kategori);
-          if (fileInput && fileInput.files && fileInput.files[0]) {
-            formData.append('gambar', fileInput.files[0]);
-          }
-
-          try {
-            let url, method;
-
-            if (id) {
-              // JIKA ADA ID = MODE UPDATE (PUT)
-              url = `http://localhost:3000/api/products/${id}`;
-              method = "PUT";
-            } else {
-              // JIKA TIDAK ADA ID = MODE TAMBAH (POST)
-              url = "http://localhost:3000/api/products";
-              method = "POST";
-            }
-
-            // Kirim FormData (browser akan set Content-Type multipart/form-data)
-            const response = await fetch(url, {
-              method: method,
-              body: formData,
-            });
-
-            if (response.ok) {
-              alert(id ? "Produk berhasil diupdate!" : "Produk berhasil ditambahkan!");
-              // Reset form & preview
-              document.getElementById('formTambahProduk').reset();
-              const imagePreview = document.getElementById('imagePreview');
-              imagePreview.src = '';
-              imagePreview.classList.add('hidden');
-
-              tutupModal();
-              loadProducts(); // Refresh tabel
-            } else {
-              const errText = await response.text();
-              console.error('Server error:', errText);
-              alert('Gagal menyimpan produk.');
-            }
-          } catch (error) {
-            console.error(error);
-            alert("Terjadi kesalahan koneksi.");
-          }
-        });
-
-      // LOGIKA HAPUS PRODUK
-      async function hapusProduk(id) {
-        // 1. Tanya yakin atau tidak?
-        const konfirmasi = confirm(
-          "Apakah Anda yakin ingin menghapus produk ini?"
-        );
-
-        if (konfirmasi) {
-          try {
-            // 2. Kirim perintah DELETE ke BackEnd
-            const response = await fetch(
-              `http://localhost:3000/api/products/${id}`,
-              {
-                method: "DELETE",
-              }
-            );
-
-            if (response.ok) {
-              alert("Produk berhasil dihapus!");
-              loadProducts(); // Refresh tabel otomatis
-
-              // (Opsional) Update angka di dashboard jika mau
-              // loadDashboardStats();
-            } else {
-              alert("Gagal menghapus produk.");
-            }
-          } catch (error) {
-            console.error(error);
-            alert("Terjadi kesalahan koneksi.");
-          }
-        }
-      }
-
-      // Jalankan fungsi ini saat halaman selesai dimuat
-      // Preview saat memilih file
-      const gambarInputEl = document.getElementById('gambarInput');
-      if (gambarInputEl) {
-        gambarInputEl.addEventListener('change', function () {
-          const preview = document.getElementById('imagePreview');
-          const file = this.files && this.files[0];
-          if (file) {
-            preview.src = URL.createObjectURL(file);
-            preview.classList.remove('hidden');
-          } else {
-            preview.src = '';
-            preview.classList.add('hidden');
-          }
-        });
-      }
-
-      document.addEventListener("DOMContentLoaded", loadProducts);
-    </script>
+    <script src="js/admin.js"></script>
   </body>
 </html>

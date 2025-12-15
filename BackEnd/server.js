@@ -1,153 +1,45 @@
-// 1. Impor 'tools' yang dibutuhkan
+/* =========================================
+   1. IMPORT LIBRARIES & KONFIGURASI
+   ========================================= */
 const express = require("express");
 const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
-const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-const WhatsAppBot = require('./whatsapp-bot');
-require('dotenv').config();
-
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = "rahasia_nanda_motor_123";
-const WEBHOOK_SECRET = 'sLUB3cnOW5Vwj2yGlMPKRykryokyp0j0';
+require("dotenv").config();
 
-// 2. Buat aplikasi Express
+// Load Module Optional (WhatsApp Bot)
+let WhatsAppBot;
+try {
+  WhatsAppBot = require("./whatsapp-bot");
+} catch (e) {
+  console.warn("⚠️ Module 'whatsapp-bot.js' tidak ditemukan. Fitur WA dinonaktifkan.");
+}
+
 const app = express();
-const PORT = 3000; // Menjalankan server di Port 3000
+const PORT = 3000;
+const SECRET_KEY = "rahasia_nanda_motor_123";
+const WEBHOOK_SECRET = "sLUB3cnOW5Vwj2yGlMPKRykryokyp0j0";
 
-// 3. Middleware
+/* =========================================
+   2. MIDDLEWARE & CLOUDINARY
+   ========================================= */
 app.use(cors());
 app.use(express.json());
 
-// Middleware untuk validasi webhook
-function validateWebhookSecret(req, res, next) {
-    const secret = req.headers['x-webhook-secret'];
-    if (secret !== WEBHOOK_SECRET) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    next();
-}
-
-// Endpoint untuk chat dengan owner via WhatsApp
-app.post('/api/whatsapp/contact-owner', async (req, res) => {
-    try {
-        const { sessionId, customerName, message } = req.body;
-
-        if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
-        }
-
-        if (!waBot) {
-            return res.status(503).json({ 
-                error: 'WhatsApp Bot tidak aktif',
-                message: 'Silakan hubungi admin via WhatsApp langsung: +62 853-1462-7451'
-            });
-        }
-
-        // Forward pesan ke owner via WhatsApp
-        const ownerMsg = `📨 *Pesan dari Website*\n\nNama: ${customerName || 'Anonymous'}\nSession: ${sessionId}\nPesan: ${message}\n\n_Balas di chat ini atau via dashboard admin_`;
-        const waClient = waBot.getClient();
-        
-        if (!waClient || !waClient.info) {
-            return res.status(503).json({ 
-                error: 'WhatsApp belum terhubung',
-                message: 'Owner sedang offline. Silakan coba lagi nanti.'
-            });
-        }
-
-        await waBot.sendToCustomer('6285314627451@c.us', ownerMsg);
-
-        // Simpan ke database
-        await db.query(
-            "INSERT INTO whatsapp_logs (from_number, message, reply, source, created_at) VALUES (?, ?, ?, 'website', NOW())",
-            [sessionId, message, 'Forwarded to owner']
-        );
-
-        res.json({
-            success: true,
-            message: 'Pesan Anda telah diteruskan ke owner. Owner akan membalas via WhatsApp.',
-            ownerNumber: '+62 853-1462-7451'
-        });
-    } catch (error) {
-        console.error('Error forwarding to owner:', error);
-        res.status(500).json({ 
-            error: 'Failed to send message',
-            message: 'Silakan hubungi langsung via WhatsApp: +62 853-1462-7451'
-        });
-    }
-});
-
-app.post('/api/whatsapp/send-reply', validateWebhookSecret, async (req, res) => {
-    try {
-        const { from, message, messageId } = req.body;
-
-        if (!from || !message) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-
-        // Normalisasi pesan
-        const msgLower = message.toLowerCase().trim();
-        let replyText = '';
-
-        // Auto-reply berdasarkan keyword
-        if (msgLower.includes('oli') || msgLower.includes('oil')) {
-            const [products] = await db.query(
-                "SELECT nama_produk, harga, stok FROM products WHERE kategori = 'Oli' AND stok > 0 LIMIT 5"
-            );
-            if (products.length > 0) {
-                replyText = '🛢️ *Daftar Oli Tersedia:*\n\n';
-                products.forEach((p, i) => {
-                    replyText += `${i + 1}. ${p.nama_produk}\n   Harga: Rp ${p.harga.toLocaleString('id-ID')}\n   Stok: ${p.stok}\n\n`;
-                });
-                replyText += 'Silakan hubungi admin untuk pemesanan.';
-            } else {
-                replyText = 'Maaf, stok oli sedang kosong.';
-            }
-        } else if (msgLower.includes('harga') || msgLower.includes('price')) {
-            replyText = 'Silakan sebutkan produk yang ingin Anda tanyakan harganya. Contoh: "harga oli merah"';
-        } else if (msgLower.includes('stok') || msgLower.includes('stock')) {
-            replyText = 'Silakan sebutkan produk yang ingin dicek stoknya.';
-        } else if (msgLower.includes('katalog') || msgLower.includes('produk')) {
-            const [count] = await db.query("SELECT COUNT(*) as total FROM products WHERE stok > 0");
-            replyText = `Kami memiliki ${count[0].total} produk tersedia.\n\nKategori:\n- Oli\n- Ban\n- Sparepart\n- Service\n\nBalas dengan nama kategori untuk melihat produk.`;
-        } else {
-            // Default reply
-            replyText = `Halo! Selamat datang di Nanda Motor 🏍️\n\nBalas dengan:\n- "oli" untuk lihat produk oli\n- "katalog" untuk lihat semua kategori\n- "harga [produk]" untuk tanya harga\n\nAdmin kami siap melayani Anda.`;
-        }
-
-        // Simpan log pesan (opsional)
-        try {
-            await db.query(
-                "INSERT INTO whatsapp_logs (from_number, message, reply, created_at) VALUES (?, ?, ?, NOW())",
-                [from, message, replyText]
-            );
-        } catch (logErr) {
-            console.warn('Gagal simpan log WhatsApp:', logErr.message);
-        }
-
-        res.json({
-            success: true,
-            reply: replyText,
-            to: from
-        });
-    } catch (error) {
-        console.error('Error webhook WhatsApp:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Multer memory storage untuk meng-handle upload file sebelum dikirim ke Cloudinary
+// Konfigurasi Upload (Multer) - Simpan di Memory
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // Max 5MB
   fileFilter: (req, file, cb) => {
     if (/^image\/(png|jpe?g|webp|gif)$/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only image files are allowed'), false);
-  }
+    else cb(new Error("Hanya file gambar yang diperbolehkan!"), false);
+  },
 });
 
-// Konfigurasi Cloudinary (gunakan CLOUDINARY_URL jika tersedia, atau variabel terpisah)
+// Konfigurasi Cloudinary
 if (process.env.CLOUDINARY_URL) {
   cloudinary.config({ url: process.env.CLOUDINARY_URL });
 } else {
@@ -158,239 +50,156 @@ if (process.env.CLOUDINARY_URL) {
   });
 }
 
-// 4. Buat Koneksi Pool ke Database MySQL
+// Middleware Validasi Webhook
+function validateWebhookSecret(req, res, next) {
+  const secret = req.headers["x-webhook-secret"];
+  if (secret !== WEBHOOK_SECRET) return res.status(401).json({ error: "Unauthorized" });
+  next();
+}
+
+/* =========================================
+   3. KONEKSI DATABASE & INISIALISASI
+   ========================================= */
 const db = mysql
   .createPool({
-    host: "localhost", // Alamat server database Anda (dari Laragon)
-    user: "root", // Username default MySQL
-    password: "", // Password default MySQL (kosong)
-    database: "nanda_motor_db", // Nama database yang Anda buat
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: "nanda_motor_db",
   })
-  .promise(); // Tambahkan .promise() agar bisa pakai syntax modern (async/await)
+  .promise();
 
-// 5. Tes Koneksi Database
-async function testDbConnection() {
-  try {
-    // Ambil satu koneksi dari pool dan jalankan query sederhana
-    await db.query("SELECT 1");
-    console.log("🎉 Berhasil terhubung ke database MySQL!");
-  } catch (error) {
-    console.error("❌ Gagal terhubung ke database:", error);
-  }
-}
-testDbConnection(); // Jalankan fungsi tes koneksi
-
-// Initialize WhatsApp Bot
+// Cek Koneksi & Init Bot WA
 let waBot = null;
-try {
-  waBot = new WhatsAppBot(db);
-  console.log('🤖 WhatsApp Bot diinisialisasi...');
-} catch (error) {
-  console.warn('⚠️ WhatsApp Bot tidak aktif:', error.message);
-}
-
-// Pastikan kolom gambar dan public_id ada di tabel products (lebih kompatibel)
-(async function ensureProductImageColumns() {
+(async () => {
   try {
-    const dbName = process.env.DB_NAME || 'nanda_motor_db';
+    await db.query("SELECT 1");
+    console.log("🎉 Terhubung ke Database MySQL!");
 
-    // Cek kolom 'gambar'
-    const [gambarRows] = await db.query(
-      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'products' AND COLUMN_NAME = 'gambar'`,
-      [dbName]
-    );
-    if (gambarRows[0].cnt === 0) {
-      await db.query("ALTER TABLE products ADD COLUMN gambar VARCHAR(255) NULL");
-      console.log('✅ Kolom `gambar` ditambahkan ke tabel products.');
+    // Cek Kolom Gambar (Migrasi Otomatis)
+    const dbName = "nanda_motor_db";
+    const checkColumn = async (colName) => {
+        const [rows] = await db.query(
+            `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'products' AND COLUMN_NAME = ?`,
+            [dbName, colName]
+        );
+        if (rows[0].cnt === 0) {
+            await db.query(`ALTER TABLE products ADD COLUMN ${colName} VARCHAR(255) NULL`);
+            console.log(`✅ Kolom '${colName}' berhasil ditambahkan.`);
+        }
+    };
+    await checkColumn('gambar');
+    await checkColumn('public_id');
+
+    // Init WhatsApp Bot
+    if (WhatsAppBot) {
+        waBot = new WhatsAppBot(db);
+        console.log("🤖 WhatsApp Bot siap.");
     }
 
-    // Cek kolom 'public_id'
-    const [publicRows] = await db.query(
-      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'products' AND COLUMN_NAME = 'public_id'`,
-      [dbName]
-    );
-    if (publicRows[0].cnt === 0) {
-      await db.query("ALTER TABLE products ADD COLUMN public_id VARCHAR(255) NULL");
-      console.log('✅ Kolom `public_id` ditambahkan ke tabel products.');
-    }
-  } catch (err) {
-    console.warn('⚠️ Gagal memastikan kolom gambar/public_id secara otomatis. Jika perlu, tambahkan kolom secara manual:', err.message);
+  } catch (error) {
+    console.error("❌ Gagal inisialisasi server:", error.message);
   }
 })();
 
-// 6. Definisikan "Rute" (Routes)
-app.get("/", (req, res) => {
-  res.send("Halo! Server BackEnd Nanda Motor sudah berjalan.");
-});
 
-// RUTE REGISTRASI
+/* =========================================
+   4. ROUTE: AUTHENTICATION (LOGIN/REGISTER)
+   ========================================= */
 app.post("/api/register", async (req, res) => {
-  const { nama, email, password } = req.body; // Ambil data yang dikirim
+  const { nama, email, password } = req.body;
 
-  // 1. Validasi sederhana: Pastikan data tidak kosong
-  if (!nama || !email || !password) {
-    return res.status(400).json({ message: "Semua kolom harus diisi!" });
-  }
-  // Gunakan .endsWith() untuk mengecek akhiran string
-  if (!email.endsWith('@gmail.com')) {
-     return res.status(400).json({ message: "Registrasi gagal! Harap gunakan alamat email @gmail.com" });
-  }
+  if (!nama || !email || !password) return res.status(400).json({ message: "Semua kolom harus diisi!" });
+  if (!email.endsWith("@gmail.com")) return res.status(400).json({ message: "Wajib menggunakan email @gmail.com" });
 
   try {
-    // 2. Cek apakah email sudah terdaftar?
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
-    if (rows.length > 0) {
-      return res.status(400).json({ message: "Email sudah terdaftar!" });
-    }
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    if (rows.length > 0) return res.status(400).json({ message: "Email sudah terdaftar!" });
 
-    // 3. Enkripsi Password (Hashing)
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.query("INSERT INTO users (nama, email, password) VALUES (?, ?, ?)", [nama, email, hashedPassword]);
 
-    // 4. Simpan ke Database
-    // Role otomatis diisi 'user' (sesuai default database)
-    await db.query(
-      "INSERT INTO users (nama, email, password) VALUES (?, ?, ?)",
-      [nama, email, hashedPassword]
-    );
-
-    // 5. Kirim respon sukses
     res.status(201).json({ message: "Registrasi berhasil! Silakan login." });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Terjadi kesalahan di server." });
+    res.status(500).json({ message: "Server Error" });
   }
 });
 
-// RUTE LOGIN
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email dan password harus diisi!" });
-  }
-
   try {
-    // 1. Cari user berdasarkan email
-    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
+    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    if (users.length === 0) return res.status(401).json({ message: "Email atau password salah!" });
 
-    if (users.length === 0) {
-      return res.status(401).json({ message: "Email atau password salah!" });
-    }
     const user = users[0];
-
-    // 2. Cek password (bandingkan password input dengan password hash di DB)
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Email atau password salah!" });
-    }
+    if (!isMatch) return res.status(401).json({ message: "Email atau password salah!" });
 
-    // 3. Buat Token (JWT)
-    const token = jwt.sign(
-      { id: user.id, role: user.role }, // Isi token
-      SECRET_KEY, // Kunci rahasia
-      { expiresIn: "1h" } // Token kadaluwarsa dalam 1 jam
-    );
+    const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, { expiresIn: "1h" });
 
-    // 4. Kirim Token dan Role kembali ke FrontEnd
-    res.json({
-      message: "Login berhasil!",
-      token: token,
-      role: user.role,
-    });
+    res.json({ message: "Login berhasil!", token, role: user.role });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Terjadi kesalahan server." });
+    res.status(500).json({ message: "Server Error" });
   }
 });
 
-// RUTE AMBIL SEMUA PRODUK (READ)
+/* =========================================
+   5. ROUTE: PRODUCTS (CRUD)
+   ========================================= */
+// GET ALL
 app.get("/api/products", async (req, res) => {
   try {
-    // Ambil semua data dari tabel products
-    const [rows] = await db.query(
-      "SELECT * FROM products ORDER BY created_at DESC"
-    );
-
-    // Kirim datanya ke FrontEnd
+    const [rows] = await db.query("SELECT * FROM products ORDER BY created_at DESC");
     res.json(rows);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Gagal mengambil data produk" });
+    res.status(500).json({ message: "Gagal ambil data" });
   }
 });
 
-// RUTE TAMBAH PRODUK (CREATE)
-// RUTE TAMBAH PRODUK (meng-handle upload gambar ke Cloudinary)
-app.post("/api/products", upload.single('gambar'), async (req, res) => {
-  const { nama_produk, harga, stok, kategori } = req.body;
-
-  // Validasi sederhana
-  if (!nama_produk || !harga || !stok) {
-    return res.status(400).json({ message: "Data produk tidak lengkap!" });
+// GET ONE
+app.get("/api/products/:id", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM products WHERE id = ?", [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: "Produk tidak ditemukan" });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: "Error ambil data" });
   }
+});
+
+// CREATE (Dengan Gambar)
+app.post("/api/products", upload.single("gambar"), async (req, res) => {
+  const { nama_produk, harga, stok, kategori } = req.body;
+  if (!nama_produk || !harga || !stok) return res.status(400).json({ message: "Data tidak lengkap" });
 
   try {
     let gambarUrl = null;
     let publicId = null;
 
     if (req.file) {
-      const dataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-      const uploadResult = await cloudinary.uploader.upload(dataUri, {
-        folder: 'nanda_motor_products',
-        resource_type: 'image'
-      });
+      const dataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      const uploadResult = await cloudinary.uploader.upload(dataUri, { folder: "nanda_motor_products" });
       gambarUrl = uploadResult.secure_url;
       publicId = uploadResult.public_id;
     }
 
-    // Simpan ke database (gambar dan public_id boleh null)
-    const sql = "INSERT INTO products (nama_produk, harga, stok, kategori, gambar, public_id) VALUES (?, ?, ?, ?, ?, ?)";
-    const values = [nama_produk, harga, stok, kategori || null, gambarUrl, publicId];
+    await db.query(
+      "INSERT INTO products (nama_produk, harga, stok, kategori, gambar, public_id) VALUES (?, ?, ?, ?, ?, ?)",
+      [nama_produk, harga, stok, kategori || null, gambarUrl, publicId]
+    );
 
-    await db.query(sql, values);
-
-    res.status(201).json({ message: "Produk berhasil ditambahkan!", gambar: gambarUrl });
+    res.status(201).json({ message: "Produk ditambahkan!", gambar: gambarUrl });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Gagal menambah produk." });
+    res.status(500).json({ message: "Gagal upload produk" });
   }
 });
 
-// RUTE HAPUS PRODUK (DELETE)
-app.delete("/api/products/:id", async (req, res) => {
-  const { id } = req.params; // Ambil ID dari URL
-
-  try {
-    // Hapus data dari database berdasarkan ID
-    await db.query("DELETE FROM products WHERE id = ?", [id]);
-
-    res.json({ message: "Produk berhasil dihapus!" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Gagal menghapus produk." });
-  }
-});
-
-// RUTE AMBIL 1 PRODUK (Untuk diisi ke Form Edit)
-app.get('/api/products/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const [rows] = await db.query('SELECT * FROM products WHERE id = ?', [id]);
-    if (rows.length === 0) return res.status(404).json({ message: 'Produk tidak ditemukan' });
-    res.json(rows[0]);
-  } catch (error) {
-    res.status(500).json({ message: 'Error mengambil data' });
-  }
-});
-
-// RUTE UPDATE PRODUK (PUT)
-// RUTE UPDATE PRODUK (meng-handle optional penggantian gambar)
-app.put('/api/products/:id', upload.single('gambar'), async (req, res) => {
+// UPDATE
+app.put("/api/products/:id", upload.single("gambar"), async (req, res) => {
   const { id } = req.params;
   const { nama_produk, harga, stok, kategori } = req.body;
 
@@ -398,25 +207,16 @@ app.put('/api/products/:id', upload.single('gambar'), async (req, res) => {
     let gambarUrl = null;
     let publicId = null;
 
-    // Jika ada file baru, unggah ke Cloudinary
     if (req.file) {
-      // Ambil public_id lama untuk dihapus (opsional)
-      try {
-        const [rows] = await db.query('SELECT public_id FROM products WHERE id = ?', [id]);
-        if (rows && rows.length > 0 && rows[0].public_id) {
-          const oldPublicId = rows[0].public_id;
-          // Hapus file lama di Cloudinary (tidak fatal jika gagal)
-          try { await cloudinary.uploader.destroy(oldPublicId); } catch (e) { /* ignore */ }
-        }
-      } catch (e) {
-        // ignore
+      // Hapus gambar lama jika ada
+      const [rows] = await db.query("SELECT public_id FROM products WHERE id = ?", [id]);
+      if (rows.length > 0 && rows[0].public_id) {
+         try { await cloudinary.uploader.destroy(rows[0].public_id); } catch (e) {}
       }
 
-      const dataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-      const uploadResult = await cloudinary.uploader.upload(dataUri, {
-        folder: 'nanda_motor_products',
-        resource_type: 'image'
-      });
+      // Upload baru
+      const dataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      const uploadResult = await cloudinary.uploader.upload(dataUri, { folder: "nanda_motor_products" });
       gambarUrl = uploadResult.secure_url;
       publicId = uploadResult.public_id;
     }
@@ -431,14 +231,48 @@ app.put('/api/products/:id', upload.single('gambar'), async (req, res) => {
     }
 
     await db.query(sql, params);
-    res.json({ message: 'Produk berhasil diupdate!', gambar: gambarUrl });
+    res.json({ message: "Produk diupdate!", gambar: gambarUrl });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Gagal mengupdate produk' });
+    res.status(500).json({ message: "Gagal update produk" });
   }
 });
 
-// Jalankan Server
-app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
+// DELETE
+app.delete("/api/products/:id", async (req, res) => {
+  try {
+    // Hapus gambar di Cloudinary dulu
+    const [rows] = await db.query("SELECT public_id FROM products WHERE id = ?", [req.params.id]);
+    if (rows.length > 0 && rows[0].public_id) {
+        try { await cloudinary.uploader.destroy(rows[0].public_id); } catch (e) {}
+    }
+    
+    await db.query("DELETE FROM products WHERE id = ?", [req.params.id]);
+    res.json({ message: "Produk dihapus!" });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal hapus produk" });
+  }
 });
+
+/* =========================================
+   6. ROUTE: WHATSAPP WEBHOOK
+   ========================================= */
+app.post("/api/whatsapp/contact-owner", async (req, res) => {
+  const { sessionId, customerName, message } = req.body;
+  if (!waBot) return res.status(503).json({ error: "Bot WA Nonaktif" });
+
+  try {
+    const ownerMsg = `📨 *Pesan Web*\nNama: ${customerName}\nPesan: ${message}\nSession: ${sessionId}`;
+    await waBot.sendToCustomer("6285314627451@c.us", ownerMsg);
+    
+    // Log ke DB
+    await db.query("INSERT INTO whatsapp_logs (from_number, message, source, created_at) VALUES (?, ?, 'website', NOW())", [sessionId, message]);
+
+    res.json({ success: true, message: "Pesan terkirim ke Owner" });
+  } catch (error) {
+    res.status(500).json({ error: "Gagal kirim pesan" });
+  }
+});
+
+// START SERVER
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
