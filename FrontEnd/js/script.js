@@ -93,6 +93,15 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      // grecaptcha adalah objek dari script Google yang kita pasang di HTML
+      const captchaResponse = grecaptcha.getResponse();
+
+      if (captchaResponse.length === 0) {
+        // Jika panjang respon 0, berarti user belum mencentang
+        alert("⚠️ Harap centang CAPTCHA 'Saya bukan robot'!");
+        return; // Stop proses, jangan kirim ke server
+      }
+
       // 3. Kirim data ke BackEnd (Node.js)
       try {
         // Tampilkan loading
@@ -149,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const email = document.getElementById("email-login").value;
       const password = document.getElementById("password-login").value;
-      const loginBtn = document.getElementById('btn-login-submit');
+      const loginBtn = document.getElementById("btn-login-submit");
 
       try {
         // Ubah tombol jadi loading
@@ -199,39 +208,87 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function setupPasswordToggle(buttonId, inputId) {
-        const toggleBtn = document.getElementById(buttonId);
-        const inputField = document.getElementById(inputId);
+    const toggleBtn = document.getElementById(buttonId);
+    const inputField = document.getElementById(inputId);
 
-        // Cek apakah elemennya ada di halaman ini?
-        if (toggleBtn && inputField) {
-            toggleBtn.addEventListener('click', function() {
-                // 1. Cek tipe saat ini (password atau text?)
-                const type = inputField.getAttribute('type') === 'password' ? 'text' : 'password';
-                
-                // 2. Ubah tipe input
-                inputField.setAttribute('type', type);
-                
-                // 3. Ubah Ikon (Mata Terbuka <-> Mata Dicoret)
-                const icon = this.querySelector('i');
-                if (type === 'text') {
-                    // Jika jadi teks (terlihat), ubah ikon jadi mata dicoret
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    // Jika jadi password (tersembunyi), ubah ikon jadi mata biasa
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-            });
+    // Cek apakah elemennya ada di halaman ini?
+    if (toggleBtn && inputField) {
+      toggleBtn.addEventListener("click", function () {
+        // 1. Cek tipe saat ini (password atau text?)
+        const type =
+          inputField.getAttribute("type") === "password" ? "text" : "password";
+
+        // 2. Ubah tipe input
+        inputField.setAttribute("type", type);
+
+        // 3. Ubah Ikon (Mata Terbuka <-> Mata Dicoret)
+        const icon = this.querySelector("i");
+        if (type === "text") {
+          // Jika jadi teks (terlihat), ubah ikon jadi mata dicoret
+          icon.classList.remove("fa-eye");
+          icon.classList.add("fa-eye-slash");
+        } else {
+          // Jika jadi password (tersembunyi), ubah ikon jadi mata biasa
+          icon.classList.remove("fa-eye-slash");
+          icon.classList.add("fa-eye");
         }
+      });
     }
+  }
 
-    // 1. Untuk Form Login
-    setupPasswordToggle('toggle-password-login', 'password-login');
+  // 1. Untuk Form Login
+  setupPasswordToggle("toggle-password-login", "password-login");
 
-    // 2. Untuk Form Register (Password Utama)
-    setupPasswordToggle('toggle-password-register', 'password-register');
+  // 2. Untuk Form Register (Password Utama)
+  setupPasswordToggle("toggle-password-register", "password-register");
 
-    // 3. Untuk Form Register (Konfirmasi Password)
-    setupPasswordToggle('toggle-confirm-password', 'password-confirm-register');
+  // 3. Untuk Form Register (Konfirmasi Password)
+  setupPasswordToggle("toggle-confirm-password", "password-confirm-register");
+
+  function cekStatusLoginNavbar() {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const navBtn = document.getElementById("navbar-login-btn");
+
+    // Jika tombol navbar ditemukan (agar tidak error di halaman yang tidak ada navbarnya)
+    if (navBtn) {
+      // JIKA ADA TOKEN (SUDAH LOGIN)
+      if (token) {
+        // 1. Ubah tulisan jadi 'Logout'
+        navBtn.innerText = "Logout";
+
+        // 2. Ubah warna jadi Merah (Visual feedback)
+        navBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+        navBtn.classList.add("bg-red-600", "hover:bg-red-700");
+
+        // 3. Ubah Link (agar tidak ke halaman login lagi)
+        navBtn.href = "#";
+
+        // 4. Tambahkan fungsi Logout saat diklik
+        navBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          // Konfirmasi logout
+          if (confirm("Apakah Anda yakin ingin keluar?")) {
+            // Hapus data dari penyimpanan
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+
+            // Refresh halaman agar kembali ke kondisi 'Login'
+            window.location.href = "index.html";
+          }
+        });
+      } else {
+        // JIKA BELUM LOGIN (KONDISI DEFAULT)
+        navBtn.innerText = "Login";
+        navBtn.href = "login.html";
+        // Kembalikan warna biru
+        navBtn.classList.add("bg-blue-600", "hover:bg-blue-700");
+        navBtn.classList.remove("bg-red-600", "hover:bg-red-700");
+      }
+    }
+  }
+
+  // Jalankan fungsi ini saat halaman selesai dimuat
+  document.addEventListener("DOMContentLoaded", cekStatusLoginNavbar);
 });
