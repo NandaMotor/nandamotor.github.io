@@ -22,6 +22,13 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <style>
+      input::-ms-reveal,
+      input::-ms-clear {
+        display: none;
+      }
+    </style>
+
     <meta
       name="description"
       content="Login atau Daftar akun Nanda Motor Anda."
@@ -126,7 +133,7 @@
                   id="email-login"
                   name="email"
                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@anda.com"
+                  placeholder="@gmail.com"
                   required
                 />
               </div>
@@ -136,19 +143,29 @@
                   class="block text-gray-700 font-semibold mb-2"
                   >Password</label
                 >
-                <input
-                  type="password"
-                  id="password-login"
-                  name="password"
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="••••••••"
-                  required
-                />
+                <div class="relative">
+                  <input
+                    type="password"
+                    id="password-login"
+                    name="password"
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="toggle-password-login"
+                    class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                </div>
               </div>
               <div class="mb-6">
                 <button
                   type="submit"
-                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300"
+                  id="btn-login-submit"
+                  class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
                 >
                   Login
                 </button>
@@ -201,7 +218,7 @@
                   id="email-register"
                   name="email"
                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@anda.com"
+                  placeholder="@gmail.com"
                   required
                 />
               </div>
@@ -211,30 +228,47 @@
                   class="block text-gray-700 font-semibold mb-2"
                   >Password</label
                 >
-                <input
-                  type="password"
-                  id="password-register"
-                  name="password"
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="••••••••"
-                  required
-                />
+                <div class="relative">
+                  <input
+                    type="password"
+                    id="password-register"
+                    name="password"
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="toggle-password-register"
+                    class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                </div>
               </div>
-
               <div class="mb-6">
                 <label
                   for="password-confirm-register"
                   class="block text-gray-700 font-semibold mb-2"
                   >Konfirmasi Password</label
                 >
-                <input
-                  type="password"
-                  id="password-confirm-register"
-                  name="password_confirm"
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="••••••••"
-                  required
-                />
+                <div class="relative">
+                  <input
+                    type="password"
+                    id="password-confirm-register"
+                    name="password_confirm"
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="toggle-confirm-password"
+                    class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                </div>
                 <p
                   id="password-error-msg"
                   class="text-red-500 text-sm mt-1 hidden"

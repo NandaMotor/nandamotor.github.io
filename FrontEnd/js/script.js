@@ -82,6 +82,11 @@ document.addEventListener("DOMContentLoaded", function () {
         "password-confirm-register"
       ).value;
 
+      if (!email.endsWith("@gmail.com")) {
+        alert("❌ Maaf, hanya email @gmail.com yang diperbolehkan!");
+        return; // Berhenti di sini, jangan kirim ke server
+      }
+
       // 2. Validasi (Cek Password sekali lagi)
       if (password !== confirmPassword) {
         alert("Password tidak cocok!");
@@ -144,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const email = document.getElementById("email-login").value;
       const password = document.getElementById("password-login").value;
-      const loginBtn = loginFormElement.querySelector("button");
+      const loginBtn = document.getElementById('btn-login-submit');
 
       try {
         // Ubah tombol jadi loading
@@ -192,4 +197,41 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  function setupPasswordToggle(buttonId, inputId) {
+        const toggleBtn = document.getElementById(buttonId);
+        const inputField = document.getElementById(inputId);
+
+        // Cek apakah elemennya ada di halaman ini?
+        if (toggleBtn && inputField) {
+            toggleBtn.addEventListener('click', function() {
+                // 1. Cek tipe saat ini (password atau text?)
+                const type = inputField.getAttribute('type') === 'password' ? 'text' : 'password';
+                
+                // 2. Ubah tipe input
+                inputField.setAttribute('type', type);
+                
+                // 3. Ubah Ikon (Mata Terbuka <-> Mata Dicoret)
+                const icon = this.querySelector('i');
+                if (type === 'text') {
+                    // Jika jadi teks (terlihat), ubah ikon jadi mata dicoret
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    // Jika jadi password (tersembunyi), ubah ikon jadi mata biasa
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        }
+    }
+
+    // 1. Untuk Form Login
+    setupPasswordToggle('toggle-password-login', 'password-login');
+
+    // 2. Untuk Form Register (Password Utama)
+    setupPasswordToggle('toggle-password-register', 'password-register');
+
+    // 3. Untuk Form Register (Konfirmasi Password)
+    setupPasswordToggle('toggle-confirm-password', 'password-confirm-register');
 });
