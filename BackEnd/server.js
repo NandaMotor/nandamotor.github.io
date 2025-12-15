@@ -231,6 +231,10 @@ app.post("/api/register", async (req, res) => {
   if (!nama || !email || !password) {
     return res.status(400).json({ message: "Semua kolom harus diisi!" });
   }
+  // Gunakan .endsWith() untuk mengecek akhiran string
+  if (!email.endsWith('@gmail.com')) {
+     return res.status(400).json({ message: "Registrasi gagal! Harap gunakan alamat email @gmail.com" });
+  }
 
   try {
     // 2. Cek apakah email sudah terdaftar?
