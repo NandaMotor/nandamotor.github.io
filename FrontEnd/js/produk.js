@@ -1,41 +1,38 @@
 /* =========================================
-   1. KONFIGURASI API
+   FILE: produk.js
+   Deskripsi: Mengelola Tampilan Katalog & Logika Tambah ke Keranjang
    ========================================= */
+
 const API_URL = "http://localhost:3000/api/products";
 
-/* =========================================
-   2. FUNGSI TAMPILKAN PRODUK (PUBLIC)
-   ========================================= */
+// --- 1. TAMPILKAN PRODUK (Load Data) ---
 async function tampilkanProduk() {
     const container = document.getElementById("daftar-produk-container");
-    if (!container) return; // Mencegah error jika elemen tidak ada
+    if (!container) return; 
 
     try {
-        // Ambil Data dari API
         const response = await fetch(API_URL);
         const products = await response.json();
 
-        container.innerHTML = ""; // Bersihkan loading text
+        container.innerHTML = ""; 
 
-        // Jika Data Kosong
         if (products.length === 0) {
             container.innerHTML = '<p class="text-center col-span-full text-gray-500 py-10">Belum ada produk yang tersedia.</p>';
             return;
         }
 
-        // Render Setiap Produk
         products.forEach((produk) => {
             const hargaRupiah = parseInt(produk.harga).toLocaleString("id-ID");
-            
-            // Gambar Fallback jika null
             const gambar = produk.gambar || "https://via.placeholder.com/300x300?text=No+Image";
             
-            // Tentukan Badge Stok (Merah/Hijau)
             const stokBadge = produk.stok > 0 
                 ? `<span class="text-green-600 font-semibold text-xs"><i class="fas fa-check-circle"></i> Stok: ${produk.stok}</span>` 
                 : `<span class="text-red-500 font-semibold text-xs"><i class="fas fa-times-circle"></i> Habis</span>`;
 
-            // HTML Card Produk
+            // Style tombol saat disabled
+            const btnDisabled = produk.stok <= 0 ? 'disabled' : '';
+            const btnClass = produk.stok <= 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-800 hover:bg-gray-700 hover:shadow-lg';
+
             const cardHTML = `
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col h-full">
                     <div class="relative h-48 overflow-hidden bg-gray-50 group">
@@ -59,8 +56,9 @@ async function tampilkanProduk() {
                             
                             <button 
                                 onclick="addToCart(${produk.id})"
-                                class="bg-gray-800 hover:bg-gray-700 text-white w-10 h-10 rounded-full flex items-center justify-center transition duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                                ${produk.stok <= 0 ? 'disabled' : ''}
+                                class="${btnClass} text-white w-10 h-10 rounded-full flex items-center justify-center transition duration-200 shadow-md"
+                                ${btnDisabled}
+                                title="Tambah ke Keranjang"
                             >
                                 <i class="fas fa-shopping-cart text-sm"></i>
                             </button>
@@ -68,7 +66,6 @@ async function tampilkanProduk() {
                     </div>
                 </div>
             `;
-
             container.insertAdjacentHTML("beforeend", cardHTML);
         });
 
@@ -83,11 +80,66 @@ async function tampilkanProduk() {
     }
 }
 
-/* =========================================
-   3. FUNGSI KERANJANG (PLACEHOLDER)
-   ========================================= */
-function addToCart(id) {
-    alert("Fitur keranjang akan segera hadir! ID Produk: " + id);
+// --- 2. LOGIKA ADD TO CART (Simpan ke LocalStorage) ---
+async function addToCart(id) {
+    try {
+        // Ambil Data Produk Terbaru (Cek Stok Real-time)
+        const response = await fetch(`${API_URL}/${id}`);
+        if (!response.ok) throw new Error("Gagal mengambil data produk");
+        
+        const product = await response.json();
+
+        // Ambil Keranjang Lama
+        let cart = [];
+        try {
+            cart = JSON.parse(localStorage.getItem('cart')) || [];
+        } catch(e) { cart = []; }
+
+        // Cek Item di Keranjang
+        const existingItem = cart.find(item => item.id === product.id);
+
+        if (existingItem) {
+            // Cek Stok
+            if (existingItem.quantity + 1 > product.stok) {
+                alert(`Maaf, stok mentok! Sisa: ${product.stok}`);
+                return;
+            }
+            existingItem.quantity += 1;
+        } else {
+            // Item Baru
+            if (product.stok <= 0) {
+                alert("Maaf, stok habis!");
+                return;
+            }
+            cart.push({
+                id: product.id,
+                nama_produk: product.nama_produk,
+                harga: product.harga,
+                gambar: product.gambar,
+                quantity: 1,
+                stok: product.stok 
+            });
+        }
+
+        // Simpan & Update UI
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        // Panggil fungsi global dari script.js untuk update badge
+        if (window.updateCartCount) window.updateCartCount();
+        if (window.renderCartItems) window.renderCartItems(); // Jika sidebar sedang terbuka, update isinya
+
+        // Feedback Visual Sederhana
+        /* alert(`Berhasil menambahkan "${product.nama_produk}" ke keranjang!`); */
+        // Atau Log ke console agar tidak mengganggu UX terus-menerus
+        console.log(`Added to cart: ${product.nama_produk}`);
+        
+        // Opsional: Buka sidebar otomatis setelah add (Uncomment jika mau)
+        // if (window.toggleCart) window.toggleCart();
+
+    } catch (error) {
+        console.error(error);
+        alert("Gagal menambahkan ke keranjang. Cek koneksi server.");
+    }
 }
 
 // Jalankan saat halaman siap
