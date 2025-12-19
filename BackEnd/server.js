@@ -8,15 +8,11 @@ const cors = require("cors");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 require("dotenv").config();
 
-// Load Module Optional (WhatsApp Bot)
-let WhatsAppBot;
-try {
-  WhatsAppBot = require("./whatsapp-bot");
-} catch (e) {
-  console.warn("⚠️ Module 'whatsapp-bot.js' tidak ditemukan. Fitur WA dinonaktifkan.");
-}
+// WA Bot API URL (dari repo MuhRifa2024/wa-bot)
+const WA_BOT_API = process.env.WA_BOT_API || "http://localhost:5000";
 
 const app = express();
 const PORT = 3000;
@@ -91,10 +87,16 @@ let waBot = null;
     await checkColumn('gambar');
     await checkColumn('public_id');
 
-    // Init WhatsApp Bot
-    if (WhatsAppBot) {
-        waBot = new WhatsAppBot(db);
-        console.log("🤖 WhatsApp Bot siap.");
+    // Cek koneksi ke WA Bot API
+    try {
+        const res = await axios.get(`${WA_BOT_API}/api/health`, { timeout: 3000 });
+        if (res.data.success) {
+            console.log("✅ WA Bot API terhubung:", WA_BOT_API);
+            console.log("   WhatsApp:", res.data.whatsapp || "checking...");
+        }
+    } catch (err) {
+        console.warn("⚠️ WA Bot belum aktif. Jalankan wa-bot terlebih dahulu.");
+        console.warn("   Clone repo: git clone https://github.com/MuhRifa2024/wa-bot.git");
     }
 
   } catch (error) {
@@ -102,6 +104,24 @@ let waBot = null;
   }
 })();
 
+
+/* =========================================
+   3. ROUTE: ROOT (INFO SERVER)
+   ========================================= */
+app.get("/", (req, res) => {
+  res.json({
+    name: "Nanda Motor API",
+    version: "1.0.0",
+    status: "running",
+    endpoints: {
+      auth: ["/api/register", "/api/login"],
+      products: ["/api/products"],
+      whatsapp: ["/api/whatsapp/contact-owner", "/api/whatsapp/send-reply"]
+    },
+    waBot: WA_BOT_API,
+    message: "Buka FrontEnd untuk melihat website"
+  });
+});
 
 /* =========================================
    4. ROUTE: AUTHENTICATION (LOGIN/REGISTER)
@@ -255,22 +275,53 @@ app.delete("/api/products/:id", async (req, res) => {
 });
 
 /* =========================================
-   6. ROUTE: WHATSAPP WEBHOOK
+   6. ROUTE: WHATSAPP WEBHOOK (INTEGRASI WA-BOT API)
    ========================================= */
 app.post("/api/whatsapp/contact-owner", async (req, res) => {
-  const { sessionId, customerName, message } = req.body;
-  if (!waBot) return res.status(503).json({ error: "Bot WA Nonaktif" });
+  const { sessionId, customerName, customerPhone, message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" });
+  }
 
   try {
-    const ownerMsg = `📨 *Pesan Web*\nNama: ${customerName}\nPesan: ${message}\nSession: ${sessionId}`;
-    await waBot.sendToCustomer("6285314627451@c.us", ownerMsg);
-    
-    // Log ke DB
-    await db.query("INSERT INTO whatsapp_logs (from_number, message, source, created_at) VALUES (?, ?, 'website', NOW())", [sessionId, message]);
+    console.log("📤 Forwarding to WA Bot API:", { sessionId, customerName, message });
 
-    res.json({ success: true, message: "Pesan terkirim ke Owner" });
+    // Forward ke wa-bot API endpoint /webhook/web-chat
+    const response = await axios.post(
+      `${WA_BOT_API}/webhook/web-chat`,
+      {
+        sessionId: sessionId || `web-${Date.now()}`,
+        message: message,
+        customerName: customerName || "Customer Website",
+        customerPhone: customerPhone || null,
+        customerEmail: null,
+        metadata: {
+          source: "nanda-motor-website",
+          timestamp: new Date().toISOString(),
+        },
+      },
+      { timeout: 5000 }
+    );
+
+    console.log("✅ WA Bot response:", response.data);
+
+    res.json({
+      success: true,
+      message: "Pesan Anda telah diterima owner via WhatsApp! Owner akan membalas segera.",
+      ownerNumber: "+62 853-1462-7451",
+      botStatus: response.data.forwardedToAdmin ? "delivered" : "queued",
+    });
   } catch (error) {
-    res.status(500).json({ error: "Gagal kirim pesan" });
+    console.error("❌ Error forwarding to WA Bot:", error.message);
+
+    // Fallback jika wa-bot offline
+    res.status(503).json({
+      success: false,
+      error: "WhatsApp Bot sedang offline",
+      message: "Silakan hubungi langsung via WhatsApp: +62 853-1462-7451",
+      fallbackNumber: "6285314627451",
+    });
   }
 });
 
