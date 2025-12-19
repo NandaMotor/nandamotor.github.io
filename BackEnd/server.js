@@ -9,10 +9,21 @@ const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 require("dotenv").config();
 
 // WA Bot API URL (dari repo MuhRifa2024/wa-bot)
 const WA_BOT_API = process.env.WA_BOT_API || "http://localhost:5000";
+
+// Email Configuration (Nodemailer)
+const emailTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'nandamotor@gmail.com',
+    pass: process.env.EMAIL_PASSWORD || 'your-app-password'
+  }
+});
 
 const app = express();
 const PORT = 3000;
@@ -87,6 +98,20 @@ let waBot = null;
     await checkColumn('gambar');
     await checkColumn('public_id');
 
+    // Cek kolom untuk email verification (users table)
+    const checkUserColumn = async (colName, colType, defaultVal = '') => {
+        const [rows] = await db.query(
+            `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`,
+            [dbName, colName]
+        );
+        if (rows[0].cnt === 0) {
+            await db.query(`ALTER TABLE users ADD COLUMN ${colName} ${colType} ${defaultVal}`);
+            console.log(`✅ Kolom '${colName}' berhasil ditambahkan ke tabel users.`);
+        }
+    };
+    await checkUserColumn('is_verified', 'BOOLEAN', 'DEFAULT 0');
+    await checkUserColumn('verification_token', 'VARCHAR(255)', 'NULL');
+
     // Cek koneksi ke WA Bot API
     try {
         const res = await axios.get(`${WA_BOT_API}/api/health`, { timeout: 3000 });
@@ -114,7 +139,7 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     status: "running",
     endpoints: {
-      auth: ["/api/register", "/api/login"],
+      auth: ["/api/register", "/api/login", "/api/verify-email", "/api/resend-verification"],
       products: ["/api/products"],
       whatsapp: ["/api/whatsapp/contact-owner", "/api/whatsapp/send-reply"]
     },
@@ -133,6 +158,40 @@ function isValidEmail(email) {
   return emailRegex.test(email);
 }
 
+// Helper: Kirim email verifikasi
+async function sendVerificationEmail(email, token, nama) {
+  const verificationUrl = `http://localhost:3000/api/verify-email?token=${token}`;
+  
+  const mailOptions = {
+    from: process.env.EMAIL_USER || 'Nanda Motor <nandamotor@gmail.com>',
+    to: email,
+    subject: 'Verifikasi Email - Nanda Motor',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">Selamat Datang, ${nama}! 🏍️</h2>
+        <p>Terima kasih telah mendaftar di <strong>Nanda Motor</strong>.</p>
+        <p>Silakan klik tombol di bawah untuk memverifikasi email Anda:</p>
+        <a href="${verificationUrl}" 
+           style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
+          Verifikasi Email
+        </a>
+        <p>Atau copy link berikut ke browser:</p>
+        <p style="color: #666; word-break: break-all;">${verificationUrl}</p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px;">Jika Anda tidak mendaftar, abaikan email ini.</p>
+      </div>
+    `
+  };
+  
+  try {
+    await emailTransporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return false;
+  }
+}
+
 app.post("/api/register", async (req, res) => {
   const { nama, email, password } = req.body;
 
@@ -148,10 +207,30 @@ app.post("/api/register", async (req, res) => {
     if (rows.length > 0) 
       return res.status(400).json({ message: "Email sudah terdaftar!" });
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
     const hashedPassword = await bcrypt.hash(password, 10);
-    await db.query("INSERT INTO users (nama, email, password) VALUES (?, ?, ?)", [nama, email, hashedPassword]);
+    
+    // Insert user with verification token
+    await db.query(
+      "INSERT INTO users (nama, email, password, is_verified, verification_token) VALUES (?, ?, ?, 0, ?)",
+      [nama, email, hashedPassword, verificationToken]
+    );
 
-    res.status(201).json({ message: "Registrasi berhasil! Silakan login." });
+    // Kirim email verifikasi
+    const emailSent = await sendVerificationEmail(email, verificationToken, nama);
+    
+    if (emailSent) {
+      res.status(201).json({ 
+        message: "Registrasi berhasil! Silakan cek email Anda untuk verifikasi.",
+        emailSent: true
+      });
+    } else {
+      res.status(201).json({ 
+        message: "Registrasi berhasil! Tapi email verifikasi gagal dikirim. Hubungi admin.",
+        emailSent: false
+      });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -169,9 +248,146 @@ app.post("/api/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Email atau password salah!" });
 
+    // Cek apakah email sudah diverifikasi
+    if (!user.is_verified) {
+      return res.status(403).json({ 
+        message: "Email belum diverifikasi. Silakan cek inbox Anda.",
+        verified: false
+      });
+    }
+
     const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, { expiresIn: "1h" });
 
     res.json({ message: "Login berhasil!", token, role: user.role });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// Endpoint: Verifikasi Email
+app.get("/api/verify-email", async (req, res) => {
+  const { token } = req.query;
+  
+  if (!token) {
+    return res.status(400).send(`
+      <html>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+          <h2 style="color: red;">❌ Token tidak valid</h2>
+          <p>Link verifikasi tidak lengkap.</p>
+        </body>
+      </html>
+    `);
+  }
+
+  try {
+    // Cari user dengan token
+    const [users] = await db.query(
+      "SELECT * FROM users WHERE verification_token = ?", 
+      [token]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).send(`
+        <html>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h2 style="color: red;">❌ Token tidak ditemukan</h2>
+            <p>Link verifikasi sudah tidak valid atau sudah digunakan.</p>
+          </body>
+        </html>
+      `);
+    }
+
+    const user = users[0];
+
+    // Cek apakah sudah verified
+    if (user.is_verified) {
+      return res.send(`
+        <html>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h2 style="color: orange;">⚠️ Email sudah diverifikasi</h2>
+            <p>Email <strong>${user.email}</strong> sudah aktif.</p>
+            <a href="/" style="color: #2563eb;">Kembali ke Website</a>
+          </body>
+        </html>
+      `);
+    }
+
+    // Update user: set is_verified = 1, hapus token
+    await db.query(
+      "UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?",
+      [user.id]
+    );
+
+    res.send(`
+      <html>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+          <h2 style="color: green;">✅ Email Berhasil Diverifikasi!</h2>
+          <p>Selamat, <strong>${user.nama}</strong>! Email <strong>${user.email}</strong> telah aktif.</p>
+          <p>Anda sekarang bisa login ke Nanda Motor.</p>
+          <a href="/" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
+            Login Sekarang
+          </a>
+        </body>
+      </html>
+    `);
+
+  } catch (error) {
+    console.error('Error verifying email:', error);
+    res.status(500).send(`
+      <html>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+          <h2 style="color: red;">❌ Server Error</h2>
+          <p>Terjadi kesalahan saat memverifikasi email.</p>
+        </body>
+      </html>
+    `);
+  }
+});
+
+// Endpoint: Kirim Ulang Email Verifikasi
+app.post("/api/resend-verification", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({ message: "Email tidak valid" });
+  }
+
+  try {
+    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    
+    if (users.length === 0) {
+      return res.status(404).json({ message: "Email tidak terdaftar" });
+    }
+
+    const user = users[0];
+
+    if (user.is_verified) {
+      return res.status(400).json({ message: "Email sudah diverifikasi" });
+    }
+
+    // Generate token baru
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    await db.query(
+      "UPDATE users SET verification_token = ? WHERE id = ?",
+      [verificationToken, user.id]
+    );
+
+    // Kirim email
+    const emailSent = await sendVerificationEmail(email, verificationToken, user.nama);
+
+    if (emailSent) {
+      res.json({ 
+        message: "Email verifikasi telah dikirim ulang. Silakan cek inbox Anda.",
+        emailSent: true
+      });
+    } else {
+      res.status(500).json({ 
+        message: "Gagal mengirim email. Silakan coba lagi.",
+        emailSent: false
+      });
+    }
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
