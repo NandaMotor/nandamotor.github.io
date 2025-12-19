@@ -126,15 +126,27 @@ app.get("/", (req, res) => {
 /* =========================================
    4. ROUTE: AUTHENTICATION (LOGIN/REGISTER)
    ========================================= */
+
+// Helper: Validasi format email
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 app.post("/api/register", async (req, res) => {
   const { nama, email, password } = req.body;
 
-  if (!nama || !email || !password) return res.status(400).json({ message: "Semua kolom harus diisi!" });
-  if (!email.endsWith("@gmail.com")) return res.status(400).json({ message: "Wajib menggunakan email @gmail.com" });
+  if (!nama || !email || !password) 
+    return res.status(400).json({ message: "Semua kolom harus diisi!" });
+  
+  // Validasi format email
+  if (!isValidEmail(email)) 
+    return res.status(400).json({ message: "Format email tidak valid!" });
 
   try {
     const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (rows.length > 0) return res.status(400).json({ message: "Email sudah terdaftar!" });
+    if (rows.length > 0) 
+      return res.status(400).json({ message: "Email sudah terdaftar!" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     await db.query("INSERT INTO users (nama, email, password) VALUES (?, ?, ?)", [nama, email, hashedPassword]);
