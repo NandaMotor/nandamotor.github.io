@@ -211,11 +211,23 @@ app.post("/api/register", async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const hashedPassword = await bcrypt.hash(password, 10);
     
+    // Development mode: auto-verify
+    const skipVerification = process.env.SKIP_EMAIL_VERIFICATION === 'true';
+    const isVerified = skipVerification ? 1 : 0;
+    
     // Insert user with verification token
     await db.query(
-      "INSERT INTO users (nama, email, password, is_verified, verification_token) VALUES (?, ?, ?, 0, ?)",
-      [nama, email, hashedPassword, verificationToken]
+      "INSERT INTO users (nama, email, password, is_verified, verification_token) VALUES (?, ?, ?, ?, ?)",
+      [nama, email, hashedPassword, isVerified, verificationToken]
     );
+
+    // Skip email jika development mode
+    if (skipVerification) {
+      return res.status(201).json({ 
+        message: "Registrasi berhasil! Anda sudah bisa login (Development Mode).",
+        devMode: true
+      });
+    }
 
     // Kirim email verifikasi
     const emailSent = await sendVerificationEmail(email, verificationToken, nama);
@@ -248,8 +260,9 @@ app.post("/api/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Email atau password salah!" });
 
-    // Cek apakah email sudah diverifikasi
-    if (!user.is_verified) {
+    // Cek apakah email sudah diverifikasi (skip di development mode)
+    const skipVerification = process.env.SKIP_EMAIL_VERIFICATION === 'true';
+    if (!skipVerification && !user.is_verified) {
       return res.status(403).json({ 
         message: "Email belum diverifikasi. Silakan cek inbox Anda.",
         verified: false
