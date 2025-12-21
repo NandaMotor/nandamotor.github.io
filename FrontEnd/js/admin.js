@@ -1,6 +1,8 @@
 /* =========================================
-   1. KONFIGURASI & VARIABEL GLOBAL
+   FILE: admin.js
+   Deskripsi: Mengelola Dashboard Admin & CRUD Produk (Fixed Layout)
    ========================================= */
+
 const API_URL = "http://localhost:3000/api/products";
 const modal = document.getElementById("modalTambah");
 const modalTitle = document.getElementById("modalTitle");
@@ -29,6 +31,12 @@ function logout() {
   }
 }
 
+// Tambahkan event listener untuk tombol logout di navbar admin (jika ada)
+document.getElementById("logout-btn")?.addEventListener("click", function(e) {
+    e.preventDefault();
+    logout();
+});
+
 /* =========================================
    2. MANAJEMEN PRODUK (READ)
    ========================================= */
@@ -36,16 +44,20 @@ async function loadProducts() {
   try {
     const response = await fetch(API_URL);
     const products = await response.json();
-    const tabelBody = document.getElementById("tabel-produk-body");
+    const tabelBody = document.getElementById("tabel-produk-body"); // Pastikan ID ini sesuai di HTML (biasanya product-table-body atau tabel-produk-body)
+    
+    // Fallback jika ID tabel beda
+    const targetTable = tabelBody || document.getElementById("product-table-body");
+    if(!targetTable) return;
 
-    tabelBody.innerHTML = ""; // Bersihkan tabel
+    targetTable.innerHTML = ""; // Bersihkan tabel
     let kategoriCounter = {};
 
     // Balik urutan agar produk terbaru di atas
     const productsSorted = products.reverse();
 
     productsSorted.forEach((produk) => {
-      // Logika ID Kustom (Contoh: OLI-001)
+      // --- LOGIKA ID KUSTOM ---
       let prefix = "GEN";
       let kat = produk.kategori;
       if (kat === "Oli") prefix = "OLI";
@@ -56,51 +68,67 @@ async function loadProducts() {
       if (!kategoriCounter[kat]) kategoriCounter[kat] = 0;
       kategoriCounter[kat]++;
 
-      const displayID = `${prefix}-${String(kategoriCounter[kat]).padStart(
-        3,
-        "0"
-      )}`;
+      const displayID = `${prefix}-${String(kategoriCounter[kat]).padStart(3, "0")}`;
+      
+      // --- STYLE STOK ---
+      const stokClass = produk.stok < 5 ? "text-red-500 font-bold" : "text-green-600 font-bold";
+      
+      // --- GAMBAR ---
+      const gambar = produk.gambar || "https://via.placeholder.com/40";
 
-      // Render Baris Tabel
+      // Render Baris Tabel (7 KOLOM - Sesuai Header Baru)
       const row = `
-                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                    <td class="py-3 px-6 font-bold text-blue-600">${displayID}</td>
-                    <td class="py-3 px-6 flex items-center">
-                        <img src="${
-                          produk.gambar || "https://via.placeholder.com/40"
-                        }" class="w-10 h-10 rounded-full mr-3 object-cover border bg-white">
-                        ${produk.nama_produk}
-                    </td>
-                    <td class="py-3 px-6"><span class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-xs">${
-                      produk.kategori
-                    }</span></td>
-                    <td class="py-3 px-6">Rp ${parseInt(
-                      produk.harga
-                    ).toLocaleString("id-ID")}</td>
-                    <td class="py-3 px-6 font-bold ${
-                      produk.stok < 5 ? "text-red-500" : "text-green-600"
-                    }">${produk.stok}</td>
-                    <td class="py-3 px-6 text-center">
-                        <div class="flex item-center justify-center">
-                            <button onclick="editProduk(${
-                              produk.id
-                            })" class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="hapusProduk(${
-                              produk.id
-                            })" class="w-4 transform hover:text-red-500 hover:scale-110">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-      tabelBody.insertAdjacentHTML("afterbegin", row);
+        <tr class="border-b border-gray-200 hover:bg-gray-50">
+            <td class="py-3 px-6 text-left whitespace-nowrap font-bold text-blue-600">
+                ${displayID}
+            </td>
+
+            <td class="py-3 px-6 text-center">
+                <div class="flex items-center justify-center">
+                    <img src="${gambar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
+                </div>
+            </td>
+
+            <td class="py-3 px-6 text-left font-medium text-gray-700">
+                ${produk.nama_produk}
+            </td>
+
+            <td class="py-3 px-6 text-center">
+                <span class="bg-blue-100 text-blue-600 py-1 px-3 rounded-full text-xs font-semibold">
+                    ${produk.kategori}
+                </span>
+            </td>
+
+            <td class="py-3 px-6 text-right font-bold text-gray-600">
+                Rp ${parseInt(produk.harga).toLocaleString("id-ID")}
+            </td>
+
+            <td class="py-3 px-6 text-center ${stokClass}">
+                ${produk.stok}
+            </td>
+
+            <td class="py-3 px-6 text-center">
+                <div class="flex item-center justify-center space-x-2">
+                    <button onclick="editProduk(${produk.id})" class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center transition" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="hapusProduk(${produk.id})" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition" title="Hapus">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+      `;
+      targetTable.insertAdjacentHTML("beforeend", row);
     });
+    
+    // Update Statistik Dashboard (Total Produk)
+    const elTotalProduk = document.getElementById("total-produk-count");
+    if(elTotalProduk) elTotalProduk.innerText = products.length;
+
   } catch (error) {
     console.error("Error:", error);
-    alert("Gagal mengambil data produk. Pastikan server menyala.");
+    // alert("Gagal mengambil data produk. Pastikan server menyala.");
   }
 }
 
@@ -108,10 +136,11 @@ async function loadProducts() {
    3. LOGIKA MODAL (BUKA/TUTUP)
    ========================================= */
 function bukaModal() {
+  if(!modal) return;
   modal.classList.remove("hidden");
-  formTambahProduk.reset();
-  editIdInput.value = "";
-  modalTitle.innerText = "Tambah Produk Baru";
+  if(formTambahProduk) formTambahProduk.reset();
+  if(editIdInput) editIdInput.value = "";
+  if(modalTitle) modalTitle.innerText = "Tambah Produk Baru";
 
   // Reset preview gambar
   if (imgPreview) imgPreview.src = "";
@@ -119,7 +148,14 @@ function bukaModal() {
 }
 
 function tutupModal() {
-  modal.classList.add("hidden");
+  if(modal) modal.classList.add("hidden");
+}
+
+// Tutup modal jika klik di luar area putih
+window.onclick = function(event) {
+    if (event.target == modal) {
+        tutupModal();
+    }
 }
 
 /* =========================================
@@ -135,7 +171,7 @@ async function editProduk(id) {
     document.getElementById("hargaInput").value = produk.harga;
     document.getElementById("stokInput").value = produk.stok;
     document.getElementById("kategoriInput").value = produk.kategori;
-    editIdInput.value = produk.id;
+    if(editIdInput) editIdInput.value = produk.id;
 
     // Tampilkan preview gambar lama jika ada
     if (produk.gambar && imgPreview && previewContainer) {
@@ -145,8 +181,8 @@ async function editProduk(id) {
       previewContainer.classList.add("hidden");
     }
 
-    modalTitle.innerText = "Edit Produk";
-    modal.classList.remove("hidden");
+    if(modalTitle) modalTitle.innerText = "Edit Produk";
+    if(modal) modal.classList.remove("hidden");
   } catch (error) {
     console.error(error);
     alert("Gagal mengambil data edit.");

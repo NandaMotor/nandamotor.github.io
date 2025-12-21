@@ -27,12 +27,7 @@
         <div class="p-6 text-center border-b border-gray-700">
           <h1 class="text-2xl font-bold text-blue-400">Nanda Motor</h1>
           <p class="text-sm text-gray-400">Admin Panel</p>
-          <li>
-            <a href="index.html" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors group">
-              <i class="fa-solid fa-globe w-6 text-center"></i>
-              <span class="ml-3 font-medium">Lihat Website</span>
-            </a>
-          </li>
+          
         </div>
 
         <nav class="flex-1 p-4 space-y-2">
@@ -59,6 +54,11 @@
             class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700"
           >
             <i class="fas fa-file-invoice-dollar mr-2"></i> Laporan Transaksi
+          </a>
+          <a 
+          href="index.html" class="flex items-center p-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors group">
+            <i class="fa-solid fa-globe w-6 text-center"></i>
+            <span class="ml-3 font-medium">Lihat Website</span>
           </a>
         </nav>
 
@@ -145,17 +145,15 @@
               </button>
             </div>
             <table class="w-full text-left border-collapse">
-              <thead>
-                <tr
-                  class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal"
-                >
-                  <th class="py-3 px-6">ID</th>
-                  <th class="py-3 px-6">Gambar</th>
-                  <th class="py-3 px-6">Nama Produk</th>
-                  <th class="py-3 px-6">Kategori</th>
-                  <th class="py-3 px-6">Harga</th>
-                  <th class="py-3 px-6">Stok</th>
-                  <th class="py-3 px-6 text-center">Aksi</th>
+              <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                <tr>
+                  <th class="py-3 px-6 text-left w-24">ID</th>
+                  <th class="py-3 px-6 text-center w-24">Gambar</th>
+                  <th class="py-3 px-6 text-left">Nama Produk</th>
+                  <th class="py-3 px-6 text-center w-32">Kategori</th>
+                  <th class="py-3 px-6 text-right w-40">Harga</th>
+                  <th class="py-3 px-6 text-center w-20">Stok</th>
+                  <th class="py-3 px-6 text-center w-24">Aksi</th>
                 </tr>
               </thead>
               <tbody
