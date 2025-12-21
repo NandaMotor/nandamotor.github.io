@@ -425,16 +425,38 @@ document.addEventListener("DOMContentLoaded", function () {
   function cekStatusLoginNavbar() {
     try {
         const token = localStorage.getItem("token");
+        const role = localStorage.getItem("role"); // Ambil role user
         const navBtn = document.getElementById("navbar-login-btn");
-        if (navBtn) {
+        const navContainer = navBtn ? navBtn.parentNode : null; // Container tombol navbar
+
+        if (navBtn && navContainer) {
           if (token) {
+            // 1. Jika User Login sebagai ADMIN, tambahkan tombol "Panel Admin"
+            if (role === 'admin') {
+                // Cek apakah tombol admin sudah ada biar gak duplikat
+                if (!document.getElementById('btn-back-admin')) {
+                    const adminBtn = document.createElement('a');
+                    adminBtn.id = 'btn-back-admin';
+                    adminBtn.href = 'admin.html';
+                    adminBtn.className = 'text-gray-700 hover:text-blue-600 text-xl mr-4';
+                    adminBtn.title = "Kembali ke Admin Panel";
+                    adminBtn.innerHTML = '<i class="fa-solid fa-user-shield"></i>';
+                    
+                    // Masukkan sebelum tombol Logout
+                    navContainer.insertBefore(adminBtn, navBtn);
+                }
+            }
+
+            // 2. Ubah Tombol Login jadi Logout
             navBtn.innerText = "Logout";
             navBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
             navBtn.classList.add("bg-red-600", "hover:bg-red-700");
             navBtn.href = "#";
+            
             // Clone untuk reset listener lama
             const newBtn = navBtn.cloneNode(true);
             navBtn.parentNode.replaceChild(newBtn, navBtn);
+            
             newBtn.addEventListener("click", function (e) {
               e.preventDefault();
               if (confirm("Apakah Anda yakin ingin keluar?")) {
@@ -444,10 +466,15 @@ document.addEventListener("DOMContentLoaded", function () {
               }
             });
           } else {
+            // Jika Belum Login
             navBtn.innerText = "Login";
             navBtn.href = "login.html";
             navBtn.classList.add("bg-blue-600", "hover:bg-blue-700");
             navBtn.classList.remove("bg-red-600", "hover:bg-red-700");
+            
+            // Hapus tombol admin jika ada (misal habis logout)
+            const adminBtn = document.getElementById('btn-back-admin');
+            if (adminBtn) adminBtn.remove();
           }
         }
     } catch(e) {
