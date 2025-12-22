@@ -1,15 +1,30 @@
 /* =========================================
    FILE: admin.js
-   Deskripsi: Mengelola Dashboard Admin & CRUD Produk (Fixed Layout)
+   Deskripsi: Mengelola Dashboard Admin & CRUD Produk (Final Fix: ID Dashboard)
    ========================================= */
 
 const API_URL = "http://localhost:3000/api/products";
+let allProductsData = []; // Variabel Global
+
+// Elemen Modal & Form
 const modal = document.getElementById("modalTambah");
 const modalTitle = document.getElementById("modalTitle");
 const editIdInput = document.getElementById("editIdInput");
 const imgPreview = document.getElementById("imgPreview");
 const previewContainer = document.getElementById("previewContainer");
 const formTambahProduk = document.getElementById("formTambahProduk");
+
+// --- 1. INISIALISASI ---
+document.addEventListener("DOMContentLoaded", () => {
+  cekOtorisasiAdmin();
+  loadAllData();
+  
+  const searchInput = document.getElementById("search-input");
+  const filterSelect = document.getElementById("filter-kategori");
+
+  if(searchInput) searchInput.addEventListener("input", filterProducts);
+  if(filterSelect) filterSelect.addEventListener("change", filterProducts);
+});
 
 // Cek Token Admin
 function cekOtorisasiAdmin() {
@@ -31,109 +46,163 @@ function logout() {
   }
 }
 
-// Tambahkan event listener untuk tombol logout di navbar admin (jika ada)
-document.getElementById("logout-btn")?.addEventListener("click", function(e) {
-    e.preventDefault();
-    logout();
-});
+// --- 2. FUNGSI NAVIGASI (SPA SWITCHING & SIDEBAR ACTIVE) ---
+window.switchView = function(viewName) {
+    const dashboardSection = document.getElementById("view-dashboard");
+    const managementSection = document.getElementById("view-management");
+    
+    const navDashboard = document.getElementById("nav-dashboard");
+    const navManagement = document.getElementById("nav-management");
+
+    // Class Helper
+    const activeClasses = ["bg-blue-600", "text-white", "shadow-md"];
+    const inactiveClasses = ["text-gray-400", "hover:text-white", "hover:bg-gray-700"];
+
+    function setInactive(el) {
+        if (!el) return;
+        el.classList.remove(...activeClasses);
+        el.classList.add(...inactiveClasses);
+    }
+
+    function setActive(el) {
+        if (!el) return;
+        el.classList.remove(...inactiveClasses);
+        el.classList.add(...activeClasses);
+    }
+
+    if (viewName === 'dashboard') {
+        dashboardSection.classList.remove("hidden");
+        managementSection.classList.add("hidden");
+        setActive(navDashboard);
+        setInactive(navManagement);
+    } else if (viewName === 'management') {
+        dashboardSection.classList.add("hidden");
+        managementSection.classList.remove("hidden");
+        setInactive(navDashboard);
+        setActive(navManagement);
+        if (typeof filterProducts === "function") filterProducts();
+    }
+};
 
 /* =========================================
-   2. MANAJEMEN PRODUK (READ)
+   3. LOGIKA DATA (FETCH & RENDER)
    ========================================= */
-async function loadProducts() {
-  try {
-    const response = await fetch(API_URL);
-    const products = await response.json();
-    const tabelBody = document.getElementById("tabel-produk-body"); // Pastikan ID ini sesuai di HTML (biasanya product-table-body atau tabel-produk-body)
-    
-    // Fallback jika ID tabel beda
-    const targetTable = tabelBody || document.getElementById("product-table-body");
-    if(!targetTable) return;
 
-    targetTable.innerHTML = ""; // Bersihkan tabel
-    let kategoriCounter = {};
+async function loadAllData() {
+    try {
+        const response = await fetch(API_URL);
+        const products = await response.json();
+        
+        allProductsData = products.reverse(); 
+        
+        // A. Render Statistik
+        const elTotal = document.getElementById("total-produk-count");
+        if(elTotal) elTotal.innerText = products.length;
+        
+        // B. Render Tabel Dashboard (5 Teratas)
+        renderDashboardTable(allProductsData.slice(0, 5));
 
-    // Balik urutan agar produk terbaru di atas
-    const productsSorted = products.reverse();
+        // C. Render Tabel Management (Semua)
+        renderManagementTable(allProductsData);
 
-    productsSorted.forEach((produk) => {
-      // --- LOGIKA ID KUSTOM ---
-      let prefix = "GEN";
-      let kat = produk.kategori;
-      if (kat === "Oli") prefix = "OLI";
-      else if (kat === "Ban") prefix = "BAN";
-      else if (kat === "Sparepart") prefix = "SPR";
-      else if (kat === "Service") prefix = "SRV";
+    } catch (error) {
+        console.error("Gagal load data:", error);
+    }
+}
 
-      if (!kategoriCounter[kat]) kategoriCounter[kat] = 0;
-      kategoriCounter[kat]++;
+// --- RENDER TABEL DASHBOARD (FIXED: ID FORMAT) ---
+function renderDashboardTable(data) {
+    const tbody = document.getElementById("dashboard-table-body");
+    if(!tbody) return;
+    tbody.innerHTML = "";
 
-      const displayID = `${prefix}-${String(kategoriCounter[kat]).padStart(3, "0")}`;
-      
-      // --- STYLE STOK ---
-      const stokClass = produk.stok < 5 ? "text-red-500 font-bold" : "text-green-600 font-bold";
-      
-      // --- GAMBAR ---
-      const gambar = produk.gambar || "https://via.placeholder.com/40";
+    data.forEach(produk => {
+        // 1. LOGIKA ID (Disamakan dengan Management)
+        let prefix = "PRD";
+        if (produk.kategori === "Oli") prefix = "OLI";
+        else if (produk.kategori === "Ban") prefix = "BAN";
+        else if (produk.kategori === "Sparepart") prefix = "SPR";
+        else if (produk.kategori === "Service") prefix = "SRV";
+        
+        const displayID = `${prefix}-${String(produk.id).padStart(3, "0")}`;
 
-      // Render Baris Tabel (7 KOLOM - Sesuai Header Baru)
-      const row = `
-        <tr class="border-b border-gray-200 hover:bg-gray-50">
-            <td class="py-3 px-6 text-left whitespace-nowrap font-bold text-blue-600">
-                ${displayID}
-            </td>
-
-            <td class="py-3 px-6 text-center">
-                <div class="flex items-center justify-center">
-                    <img src="${gambar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
-                </div>
-            </td>
-
-            <td class="py-3 px-6 text-left font-medium text-gray-700">
-                ${produk.nama_produk}
-            </td>
-
-            <td class="py-3 px-6 text-center">
-                <span class="bg-blue-100 text-blue-600 py-1 px-3 rounded-full text-xs font-semibold">
-                    ${produk.kategori}
-                </span>
-            </td>
-
-            <td class="py-3 px-6 text-right font-bold text-gray-600">
-                Rp ${parseInt(produk.harga).toLocaleString("id-ID")}
-            </td>
-
-            <td class="py-3 px-6 text-center ${stokClass}">
-                ${produk.stok}
-            </td>
-
-            <td class="py-3 px-6 text-center">
-                <div class="flex item-center justify-center space-x-2">
-                    <button onclick="editProduk(${produk.id})" class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center transition" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="hapusProduk(${produk.id})" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition" title="Hapus">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-      `;
-      targetTable.insertAdjacentHTML("beforeend", row);
+        // 2. Style Stok
+        const stokClass = produk.stok < 5 ? "text-red-500 font-bold" : "text-green-600 font-bold";
+        
+        const row = `
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="py-3 px-6 text-left text-blue-600 font-bold">${displayID}</td>
+                <td class="py-3 px-6 text-center"><img src="${produk.gambar || 'https://via.placeholder.com/40'}" class="w-8 h-8 rounded-full mx-auto border object-cover"></td>
+                <td class="py-3 px-6 text-left">${produk.nama_produk}</td>
+                <td class="py-3 px-6 text-center"><span class="bg-gray-200 px-2 py-1 rounded text-xs text-gray-700">${produk.kategori}</span></td>
+                <td class="py-3 px-6 text-right">Rp ${parseInt(produk.harga).toLocaleString("id-ID")}</td>
+                <td class="py-3 px-6 text-center ${stokClass}">${produk.stok}</td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML("beforeend", row);
     });
-    
-    // Update Statistik Dashboard (Total Produk)
-    const elTotalProduk = document.getElementById("total-produk-count");
-    if(elTotalProduk) elTotalProduk.innerText = products.length;
+}
 
-  } catch (error) {
-    console.error("Error:", error);
-    // alert("Gagal mengambil data produk. Pastikan server menyala.");
-  }
+// --- RENDER TABEL MANAJEMEN ---
+function renderManagementTable(data) {
+    const tbody = document.getElementById("management-table-body");
+    const noDataMsg = document.getElementById("no-data-msg");
+    
+    if(!tbody) return;
+    tbody.innerHTML = "";
+
+    if (data.length === 0) {
+        if(noDataMsg) noDataMsg.classList.remove("hidden");
+    } else {
+        if(noDataMsg) noDataMsg.classList.add("hidden");
+    }
+
+    data.forEach(produk => {
+        let prefix = "PRD";
+        if (produk.kategori === "Oli") prefix = "OLI";
+        else if (produk.kategori === "Ban") prefix = "BAN";
+        else if (produk.kategori === "Sparepart") prefix = "SPR";
+        else if (produk.kategori === "Service") prefix = "SRV";
+        
+        const displayID = `${prefix}-${String(produk.id).padStart(3, "0")}`;
+        const stokClass = produk.stok < 5 ? "text-red-500 font-bold" : "text-green-600 font-bold";
+
+        const row = `
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="py-3 px-6 text-left text-blue-600 font-bold whitespace-nowrap">${displayID}</td>
+                <td class="py-3 px-6 text-center"><img src="${produk.gambar || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full mx-auto border object-cover"></td>
+                <td class="py-3 px-6 text-left font-medium">${produk.nama_produk}</td>
+                <td class="py-3 px-6 text-center"><span class="bg-blue-100 text-blue-600 py-1 px-3 rounded-full text-xs font-semibold">${produk.kategori}</span></td>
+                <td class="py-3 px-6 text-right font-bold text-gray-600">Rp ${parseInt(produk.harga).toLocaleString("id-ID")}</td>
+                <td class="py-3 px-6 text-center ${stokClass}">${produk.stok}</td>
+                <td class="py-3 px-6 text-center">
+                    <div class="flex item-center justify-center space-x-2">
+                        <button onclick="editProduk(${produk.id})" class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center transition" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button onclick="hapusProduk(${produk.id})" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition" title="Hapus"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML("beforeend", row);
+    });
+}
+
+// --- LOGIKA FILTER & SEARCH ---
+function filterProducts() {
+    const searchTerm = document.getElementById("search-input").value.toLowerCase();
+    const categoryFilter = document.getElementById("filter-kategori").value;
+
+    const filteredData = allProductsData.filter(produk => {
+        const matchName = produk.nama_produk.toLowerCase().includes(searchTerm);
+        const matchCategory = categoryFilter === "all" || produk.kategori === categoryFilter;
+        return matchName && matchCategory;
+    });
+
+    renderManagementTable(filteredData);
 }
 
 /* =========================================
-   3. LOGIKA MODAL (BUKA/TUTUP)
+   4. LOGIKA MODAL (BUKA/TUTUP)
    ========================================= */
 function bukaModal() {
   if(!modal) return;
@@ -141,8 +210,6 @@ function bukaModal() {
   if(formTambahProduk) formTambahProduk.reset();
   if(editIdInput) editIdInput.value = "";
   if(modalTitle) modalTitle.innerText = "Tambah Produk Baru";
-
-  // Reset preview gambar
   if (imgPreview) imgPreview.src = "";
   if (previewContainer) previewContainer.classList.add("hidden");
 }
@@ -151,29 +218,24 @@ function tutupModal() {
   if(modal) modal.classList.add("hidden");
 }
 
-// Tutup modal jika klik di luar area putih
 window.onclick = function(event) {
-    if (event.target == modal) {
-        tutupModal();
-    }
+    if (event.target == modal) tutupModal();
 }
 
 /* =========================================
-   4. LOGIKA EDIT & HAPUS
+   5. LOGIKA EDIT & HAPUS
    ========================================= */
 async function editProduk(id) {
   try {
     const response = await fetch(`${API_URL}/${id}`);
     const produk = await response.json();
 
-    // Isi form dengan data yang ada
     document.getElementById("namaInput").value = produk.nama_produk;
     document.getElementById("hargaInput").value = produk.harga;
     document.getElementById("stokInput").value = produk.stok;
     document.getElementById("kategoriInput").value = produk.kategori;
     if(editIdInput) editIdInput.value = produk.id;
 
-    // Tampilkan preview gambar lama jika ada
     if (produk.gambar && imgPreview && previewContainer) {
       imgPreview.src = produk.gambar;
       previewContainer.classList.remove("hidden");
@@ -195,7 +257,7 @@ async function hapusProduk(id) {
       const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       if (response.ok) {
         alert("Produk berhasil dihapus!");
-        loadProducts();
+        loadAllData();
       } else {
         alert("Gagal menghapus produk.");
       }
@@ -207,7 +269,7 @@ async function hapusProduk(id) {
 }
 
 /* =========================================
-   5. LOGIKA SUBMIT (TAMBAH/UPDATE)
+   6. LOGIKA SUBMIT (TAMBAH/UPDATE)
    ========================================= */
 if (formTambahProduk) {
   formTambahProduk.addEventListener("submit", async function (e) {
@@ -217,11 +279,9 @@ if (formTambahProduk) {
     const submitBtn = this.querySelector('button[type="submit"]');
     const textAsli = submitBtn.innerText;
 
-    // Ubah tombol jadi loading
     submitBtn.innerText = "Mengupload...";
     submitBtn.disabled = true;
 
-    // Gunakan FormData untuk support upload file
     const formData = new FormData();
     formData.append("nama_produk", document.getElementById("namaInput").value);
     formData.append("harga", document.getElementById("hargaInput").value);
@@ -247,7 +307,7 @@ if (formTambahProduk) {
       if (response.ok) {
         alert(result.message || "Berhasil disimpan!");
         tutupModal();
-        loadProducts();
+        loadAllData();
       } else {
         alert("Gagal: " + result.message);
       }
@@ -261,7 +321,7 @@ if (formTambahProduk) {
   });
 }
 
-// Preview gambar saat user memilih file
+// Preview gambar
 const gambarInputEl = document.getElementById("gambarInput");
 if (gambarInputEl) {
   gambarInputEl.addEventListener("change", function (e) {
@@ -276,12 +336,3 @@ if (gambarInputEl) {
     }
   });
 }
-
-/* =========================================
-   6. INISIALISASI
-   ========================================= */
-// Jalankan saat halaman siap
-document.addEventListener("DOMContentLoaded", () => {
-  cekOtorisasiAdmin();
-  loadProducts();
-});

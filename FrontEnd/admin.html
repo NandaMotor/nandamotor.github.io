@@ -6,6 +6,10 @@
     <title>Admin Dashboard | Nanda Motor</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
 
     <style>
       input::-webkit-outer-spin-button,
@@ -14,60 +18,63 @@
         margin: 0;
       }
     </style>
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-    />
   </head>
 
-  <body class="bg-gray-100">
+  <body class="bg-gray-100 font-sans">
     <div class="flex h-screen">
-      <aside class="w-64 bg-gray-800 text-white flex flex-col">
+      <aside class="w-64 bg-gray-800 text-white flex flex-col shadow-lg transition-all duration-300">
         <div class="p-6 text-center border-b border-gray-700">
-          <h1 class="text-2xl font-bold text-blue-400">Nanda Motor</h1>
-          <p class="text-sm text-gray-400">Admin Panel</p>
-          
+          <h1 class="text-2xl font-bold text-blue-400 tracking-wider">Nanda Motor</h1>
+          <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Admin Panel</p>
         </div>
 
-        <nav class="flex-1 p-4 space-y-2">
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
           <a
             href="#"
-            class="block py-2.5 px-4 rounded transition duration-200 bg-blue-600 hover:bg-blue-700"
+            id="nav-dashboard"
+            onclick="switchView('dashboard')"
+            class="flex items-center py-3 px-4 rounded transition duration-200 bg-blue-600 text-white shadow-md group"
           >
-            <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-          </a>
-          <a
-            href="#"
-            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700"
-          >
-            <i class="fas fa-box mr-2"></i> Manajemen Produk
-          </a>
-          <a
-            href="#"
-            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700"
-          >
-            <i class="fas fa-users mr-2"></i> Data Pengguna
-          </a>
-          <a
-            href="#"
-            class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700"
-          >
-            <i class="fas fa-file-invoice-dollar mr-2"></i> Laporan Transaksi
-          </a>
-        </nav>
+    <i class="fas fa-tachometer-alt w-6 text-center group-hover:scale-110 transition-transform"></i>
+    <span class="ml-3 font-medium">Dashboard</span>
+  </a>
 
+  <a
+    href="#"
+    id="nav-management"
+    onclick="switchView('management')"
+    class="flex items-center py-3 px-4 rounded transition duration-200 hover:bg-gray-700 text-gray-400 hover:text-white group"
+  >
+    <i class="fas fa-box w-6 text-center group-hover:scale-110 transition-transform"></i>
+    <span class="ml-3 font-medium">Manajemen Produk</span>
+  </a>
+
+  <a
+    href="#"
+    class="flex items-center py-3 px-4 rounded transition duration-200 hover:bg-gray-700 text-gray-400 hover:text-white group cursor-not-allowed opacity-50"
+  >
+    <i class="fas fa-users w-6 text-center"></i>
+    <span class="ml-3 font-medium">Data Pengguna</span>
+  </a>
+  <a
+    href="#"
+    class="flex items-center py-3 px-4 rounded transition duration-200 hover:bg-gray-700 text-gray-400 hover:text-white group cursor-not-allowed opacity-50"
+            >
+    <i class="fas fa-file-invoice-dollar w-6 text-center"></i>
+    <span class="ml-3 font-medium">Laporan Transaksi</span>
+  </a>
+</nav>
         <div class="p-4 border-t border-gray-700 space-y-3">
           <a
             href="index.html"
-            class="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded text-white transition text-center"
+            class="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded text-white transition text-center shadow"
           >
             <i class="fas fa-globe mr-2"></i> Lihat Website
           </a>
 
           <button
             onclick="logout()"
-            class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded text-white transition"
+            class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded text-white transition shadow"
           >
             <i class="fas fa-sign-out-alt mr-2"></i> Logout
           </button>
@@ -75,180 +82,243 @@
       </aside>
 
       <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white shadow p-4 flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-gray-800">
-            Dashboard Overview
+        <header class="bg-white shadow p-4 flex justify-between items-center z-10">
+          <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-bars text-gray-400 mr-2 lg:hidden"></i>
+            Admin Area
           </h2>
           <div class="flex items-center space-x-4">
-            <span class="text-gray-600">Halo, Admin</span>
-            <div
-              class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold"
-            >
+            <span class="text-gray-600 hidden sm:block">Halo, Admin</span>
+            <div class="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
               A
             </div>
           </div>
         </header>
 
-        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div
-              class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500"
-            >
-              <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
-                  <i class="fas fa-box fa-2x"></i>
-                </div>
-                <div>
-                  <p class="text-gray-500">Total Produk</p>
-                  <p class="text-2xl font-bold text-gray-800">0</p>
-                </div>
-              </div>
-            </div>
-            <div
-              class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500"
-            >
-              <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
-                  <i class="fas fa-users fa-2x"></i>
-                </div>
-                <div>
-                  <p class="text-gray-500">Total User</p>
-                  <p class="text-2xl font-bold text-gray-800">1</p>
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+          
+          <section id="view-dashboard">
+            <h3 class="text-3xl font-medium text-gray-700 mb-6">Dashboard Overview</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 transform hover:-translate-y-1 transition duration-300">
+                <div class="flex items-center">
+                  <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
+                    <i class="fas fa-box fa-2x"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 font-semibold uppercase">Total Produk</p>
+                    <p class="text-2xl font-bold text-gray-800" id="total-produk-count">0</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div
-              class="bg-white p-6 rounded-lg shadow border-l-4 border-yellow-500"
-            >
-              <div class="flex items-center">
-                <div
-                  class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4"
-                >
-                  <i class="fas fa-shopping-cart fa-2x"></i>
-                </div>
-                <div>
-                  <p class="text-gray-500">Pesanan Baru</p>
-                  <p class="text-2xl font-bold text-gray-800">0</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div
-              class="p-4 border-b border-gray-200 flex justify-between items-center"
-            >
-              <h3 class="font-bold text-gray-800">Daftar Produk</h3>
-              <button
-                onclick="bukaModal()"
-                class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
-              >
-                + Tambah Produk
-              </button>
+              <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 transform hover:-translate-y-1 transition duration-300">
+                <div class="flex items-center">
+                  <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
+                    <i class="fas fa-users fa-2x"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 font-semibold uppercase">Total User</p>
+                    <p class="text-2xl font-bold text-gray-800">1</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500 transform hover:-translate-y-1 transition duration-300">
+                <div class="flex items-center">
+                  <div class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4">
+                    <i class="fas fa-shopping-cart fa-2x"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500 font-semibold uppercase">Pesanan Baru</p>
+                    <p class="text-2xl font-bold text-gray-800">0</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <table class="w-full text-left border-collapse">
-              <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                <tr>
-                  <th class="py-3 px-6 text-left w-24">ID</th>
-                  <th class="py-3 px-6 text-center w-24">Gambar</th>
-                  <th class="py-3 px-6 text-left">Nama Produk</th>
-                  <th class="py-3 px-6 text-center w-32">Kategori</th>
-                  <th class="py-3 px-6 text-right w-40">Harga</th>
-                  <th class="py-3 px-6 text-center w-20">Stok</th>
-                  <th class="py-3 px-6 text-center w-24">Aksi</th>
-                </tr>
-              </thead>
-              <tbody
-                id="tabel-produk-body"
-                class="text-gray-600 text-sm font-light"
-              ></tbody>
-            </table>
-          </div>
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+              <div class="p-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="font-bold text-gray-700">Produk Terbaru Ditambahkan</h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                      <tr>
+                        <th class="py-3 px-6 text-left w-24">ID</th>
+                        <th class="py-3 px-6 text-center w-24">Gambar</th>
+                        <th class="py-3 px-6 text-left">Nama Produk</th>
+                        <th class="py-3 px-6 text-center w-32">Kategori</th>
+                        <th class="py-3 px-6 text-right w-40">Harga</th>
+                        <th class="py-3 px-6 text-center w-20">Stok</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dashboard-table-body" class="text-gray-600 text-sm font-light">
+                      </tbody>
+                </table>
+              </div>
+              <div class="p-3 bg-gray-50 text-center border-t border-gray-200">
+                <button onclick="switchView('management')" class="text-blue-600 hover:text-blue-800 text-sm font-semibold hover:underline">Lihat Semua Produk &rarr;</button>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-management" class="hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <h3 class="text-3xl font-medium text-gray-700">Manajemen Produk</h3>
+                <button onclick="bukaModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow-lg transition transform hover:scale-105 flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Tambah Produk
+                </button>
+            </div>
+    
+            <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="relative w-full md:w-1/3">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="search-input" placeholder="Cari nama produk..." class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                </div>
+    
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <label class="font-semibold text-gray-600 text-sm"><i class="fas fa-filter mr-1"></i> Filter:</label>
+                    <select id="filter-kategori" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 cursor-pointer transition">
+                        <option value="all">Semua Kategori</option>
+                        <option value="Oli">Oli</option>
+                        <option value="Ban">Ban</option>
+                        <option value="Sparepart">Sparepart</option>
+                        <option value="Service">Service</option>
+                    </select>
+                </div>
+            </div>
+    
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white table-auto">
+                        <thead class="bg-gray-800 text-white uppercase text-sm leading-normal">
+                            <tr>
+                                <th class="py-3 px-6 text-left w-24">ID</th>
+                                <th class="py-3 px-6 text-center w-24">Gambar</th>
+                                <th class="py-3 px-6 text-left">Nama Produk</th>
+                                <th class="py-3 px-6 text-center w-32">Kategori</th>
+                                <th class="py-3 px-6 text-right w-40">Harga</th>
+                                <th class="py-3 px-6 text-center w-20">Stok</th>
+                                <th class="py-3 px-6 text-center w-24">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="management-table-body" class="text-gray-600 text-sm font-light">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="no-data-msg" class="hidden text-center py-12 text-gray-400">
+                    <i class="fas fa-box-open text-6xl mb-4 text-gray-300"></i>
+                    <p class="text-lg">Tidak ada produk yang cocok dengan pencarian Anda.</p>
+                </div>
+            </div>
+          </section>
+
         </main>
       </div>
     </div>
 
     <div
       id="modalTambah"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity"
     >
-      <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-gray-800">
-          Tambah Produk Baru
-        </h2>
+      <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg transform transition-all scale-100">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="modalTitle" class="text-2xl font-bold text-gray-800">
+              Tambah Produk Baru
+            </h2>
+            <button onclick="tutupModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
 
         <form id="formTambahProduk">
           <input type="hidden" id="editIdInput" />
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2"
-              >Nama Produk</label
-            >
+          
+          <div class="mb-5">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Nama Produk</label>
             <input
               type="text"
               id="namaInput"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="Contoh: Oli Yamalube Sport"
               required
             />
           </div>
 
-          <div class="flex gap-4 mb-4">
+          <div class="flex gap-4 mb-5">
             <div class="w-1/2">
-              <label class="block text-gray-700 text-sm font-bold mb-2"
-                >Harga (Rp)</label
-              >
+              <label class="block text-gray-700 text-sm font-bold mb-2">Harga (Rp)</label>
               <input
                 type="number"
                 id="hargaInput"
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="50000"
                 required
               />
             </div>
             <div class="w-1/2">
-              <label class="block text-gray-700 text-sm font-bold mb-2"
-                >Stok</label
-              >
+              <label class="block text-gray-700 text-sm font-bold mb-2">Stok</label>
               <input
                 type="number"
                 id="stokInput"
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="10"
                 required
               />
+            </div>
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
+            <div class="relative">
+                <select
+                  id="kategoriInput"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white transition cursor-pointer"
+                >
+                  <option value="Oli">Oli</option>
+                  <option value="Ban">Ban</option>
+                  <option value="Sparepart">Sparepart</option>
+                  <option value="Service">Service</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
             </div>
           </div>
 
           <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-bold mb-2"
-              >Kategori</label
-            >
-            <select
-              id="kategoriInput"
-              class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <option value="Oli">Oli</option>
-              <option value="Ban">Ban</option>
-              <option value="Sparepart">Sparepart</option>
-              <option value="Service">Service</option>
-            </select>
+            <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Produk</label>
+            <div class="flex items-center justify-center w-full">
+                <label for="gambarInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-500"><span class="font-semibold">Klik untuk upload</span> atau drag & drop</p>
+                    </div>
+                    <input id="gambarInput" type="file" accept="image/*" class="hidden" />
+                </label>
+            </div>
+            
+            <div id="previewContainer" class="hidden mt-4 text-center">
+                <p class="text-xs text-gray-500 mb-2">Preview Gambar:</p>
+                <img id="imgPreview" src="" alt="Preview" class="max-h-32 mx-auto rounded shadow-sm border" />
+            </div>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Produk</label>
-            <input type="file" id="gambarInput" accept="image/*" class="block w-full text-sm text-gray-700" />
-            <img id="imgPreview" src="" alt="Preview" class="mt-3 max-h-40 hidden rounded" />
-            <div id="previewContainer" class="hidden"></div> 
-            </div>
-
-          <div class="flex justify-end gap-2">
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onclick="tutupModal()"
-              class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg transition"
             >
               Batal
             </button>
             <button
               type="submit"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition transform active:scale-95"
             >
               Simpan
             </button>
