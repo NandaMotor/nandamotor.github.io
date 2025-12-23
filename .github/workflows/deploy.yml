@@ -1,0 +1,28 @@
+name: Deploy to AlwaysData
+
+on:  
+  push:
+    branches: 
+      - main
+    paths:
+      - 'Backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:  
+      - name: Checkout code
+        uses:  actions/checkout@v3
+      
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host:  ssh-rif.alwaysdata.net
+          username: rif
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd /home/rif/www/api-nandamotor
+            git pull origin main
+            npm install --production
+            # Restart command (jika ada)
