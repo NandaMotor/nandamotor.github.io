@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* =========================================
    1. IMPORT LIBRARIES & KONFIGURASI
    ========================================= */
@@ -26,9 +27,9 @@ const emailTransporter = nodemailer.createTransport({
 });
 
 const app = express();
-const PORT = 3000;
-const SECRET_KEY = "rahasia_nanda_motor_123";
-const WEBHOOK_SECRET = "sLUB3cnOW5Vwj2yGlMPKRykryokyp0j0";
+const PORT = process.env.PORT || 3000;
+const SECRET_KEY = process.env.SECRET_KEY || "rahasia_nanda_motor_123";
+const WEBHOOK_SECRET = process.env. WEBHOOK_SECRET || "sLUB3cnOW5Vwj2yGlMPKRykryokyp0j0";
 
 /* =========================================
    2. MIDDLEWARE & CLOUDINARY
@@ -69,10 +70,11 @@ function validateWebhookSecret(req, res, next) {
    ========================================= */
 const db = mysql
   .createPool({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "nanda_motor_db",
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 3306,
   })
   .promise();
 
@@ -84,33 +86,34 @@ let waBot = null;
     console.log("🎉 Terhubung ke Database MySQL!");
 
     // Cek Kolom Gambar (Migrasi Otomatis)
-    const dbName = "nanda_motor_db";
-    const checkColumn = async (colName) => {
-        const [rows] = await db.query(
-            `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'products' AND COLUMN_NAME = ?`,
-            [dbName, colName]
-        );
-        if (rows[0].cnt === 0) {
-            await db.query(`ALTER TABLE products ADD COLUMN ${colName} VARCHAR(255) NULL`);
-            console.log(`✅ Kolom '${colName}' berhasil ditambahkan.`);
-        }
-    };
-    await checkColumn('gambar');
-    await checkColumn('public_id');
+   // Cek Kolom Gambar (Migrasi Otomatis)
+const dbName = process.env. DB_NAME;  // ✅ Pakai database dari . env
+const checkColumn = async (colName) => {
+    const [rows] = await db.query(
+        `SELECT COUNT(*) AS cnt FROM information_schema. COLUMNS WHERE TABLE_SCHEMA = ?  AND TABLE_NAME = 'products' AND COLUMN_NAME = ? `,
+        [dbName, colName]
+    );
+    if (rows[0].cnt === 0) {
+        await db. query(`ALTER TABLE products ADD COLUMN ${colName} VARCHAR(255) NULL`);
+        console.log(`✅ Kolom '${colName}' berhasil ditambahkan. `);
+    }
+};
+await checkColumn('gambar');
+await checkColumn('public_id');
 
-    // Cek kolom untuk email verification (users table)
-    const checkUserColumn = async (colName, colType, defaultVal = '') => {
-        const [rows] = await db.query(
-            `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`,
-            [dbName, colName]
-        );
-        if (rows[0].cnt === 0) {
-            await db.query(`ALTER TABLE users ADD COLUMN ${colName} ${colType} ${defaultVal}`);
-            console.log(`✅ Kolom '${colName}' berhasil ditambahkan ke tabel users.`);
-        }
-    };
-    await checkUserColumn('is_verified', 'BOOLEAN', 'DEFAULT 0');
-    await checkUserColumn('verification_token', 'VARCHAR(255)', 'NULL');
+// Cek kolom untuk email verification (users table)
+const checkUserColumn = async (colName, colType, defaultVal = '') => {
+    const [rows] = await db.query(
+        `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`,
+        [dbName, colName]
+    );
+    if (rows[0].cnt === 0) {
+        await db.query(`ALTER TABLE users ADD COLUMN ${colName} ${colType} ${defaultVal}`);
+        console.log(`✅ Kolom '${colName}' berhasil ditambahkan ke tabel users.`);
+    }
+};
+await checkUserColumn('is_verified', 'BOOLEAN', 'DEFAULT 0');
+await checkUserColumn('verification_token', 'VARCHAR(255)', 'NULL');
 
     // Cek koneksi ke WA Bot API
     try {
