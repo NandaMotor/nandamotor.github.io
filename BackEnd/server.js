@@ -569,5 +569,16 @@ app.post("/api/whatsapp/contact-owner", async (req, res) => {
   }
 });
 
+// ============================================
+// TEST AUTO-DEPLOY ENDPOINT
+// ============================================
+app.get('/api/auto-deploy-test', (req, res) => {
+  res.json({ 
+    message: "✅ Auto-deploy GitHub Actions BERHASIL!", 
+    version: "v1.0.1",
+    deployedAt: new Date().toISOString(),
+    server: "AlwaysData"
+  });
+});
 // START SERVER
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
