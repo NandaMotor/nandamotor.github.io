@@ -572,11 +572,12 @@ app.post("/api/whatsapp/contact-owner", async (req, res) => {
 // ============================================
 // TEST AUTO-DEPLOY ENDPOINT
 // ============================================
-app.get('/api/deploy-check', (req, res) => {
+app.get('/api/workflow-test', (req, res) => {
   res.json({ 
-    message: "✅ Auto-deploy GitHub Actions testing.. .", 
-    version: "v1.0.2",
-    timestamp: new Date().toISOString()
+    message: "✅ Auto-deploy SUCCESS!  Workflow triggered by push!",
+    version: "v1.0.4",
+    deployedAt: new Date().toISOString(),
+    trigger: "Automatic (push to Backend/)"
   });
 });
 
