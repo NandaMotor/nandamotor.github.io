@@ -1,27 +1,42 @@
 name: Deploy to AlwaysData
 
-on:  
+on:
   push:
-    branches: 
+    branches:
       - main
     paths:
-      - 'Backend/**'
+      - 'BackEnd/**'
   workflow_dispatch:
+
 jobs:
   deploy:
-    runs-on:  ubuntu-latest
-    
-    steps:  
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout code
-        uses:   actions/checkout@v3
-      
-      - name: Deploy via SSH
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH (git pull, npm install, restart)
         uses: appleboy/ssh-action@master
         with:
-          host:   ssh-rif.alwaysdata.net
+          host: ssh-rif.alwaysdata.net
           username: rif
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            set -e
+
             cd /home/rif/www/api-nandamotor
+
+            # update code
             git pull origin main
-            npm install --production
+
+            # install production deps
+            npm ci --production || npm install --production
+
+            # Try pm2 restart, fallback to start or nohup if pm2 not available
+            if command -v pm2 >/dev/null 2>&1; then
+              pm2 restart nandamotor-api || pm2 start BackEnd/server.js --name nandamotor-api
+            else
+              # No pm2: kill previous node processes that run from this project and restart
+              pkill -f "/home/rif/www/api-nandamotor" || true
+              nohup node BackEnd/server.js > server.log 2>&1 &
+            fi
