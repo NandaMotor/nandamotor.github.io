@@ -28,8 +28,12 @@ const emailTransporter = nodemailer.createTransport({
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET_KEY = process.env.SECRET_KEY || "rahasia_nanda_motor_123";
-const WEBHOOK_SECRET = process.env. WEBHOOK_SECRET || "sLUB3cnOW5Vwj2yGlMPKRykryokyp0j0";
+
+const SECRET_KEY = process.env.SECRET_KEY;
+if (!SECRET_KEY) throw new Error("SECRET_KEY environment variable is not set!");
+
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+if (!WEBHOOK_SECRET) throw new Error("WEBHOOK_SECRET environment variable is not set!");
 
 /* =========================================
    2. MIDDLEWARE & CLOUDINARY
