@@ -28,8 +28,7 @@ jobs:
       - name: Deploy BackEnd folder
         run: |
           rsync -avz -e "ssh -i ~/.ssh/id_alwaysdata -o UserKnownHostsFile=~/.ssh/known_hosts" ./BackEnd/ rif@ssh-rif.alwaysdata.net:/home/rif/www/api-nandamotor/BackEnd/
-          rsync -avz -e "ssh -i ~/.ssh/id_alwaysdata -o UserKnownHostsFile=~/.ssh/known_hosts" ./server.js rif@ssh-rif.alwaysdata.net:/home/rif/www/api-nandamotor/
-
+          rsync -avz -e "ssh -i ~/.ssh/id_alwaysdata -o UserKnownHostsFile=~/.ssh/known_hosts" ./BackEnd/server.js rif@ssh-rif.alwaysdata.net:/home/rif/www/api-nandamotor/
 
 
           
