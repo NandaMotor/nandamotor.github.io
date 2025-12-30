@@ -3,7 +3,7 @@
    Deskripsi: Mengelola Dashboard Admin & CRUD Produk (Final Fix: ID Dashboard)
    ========================================= */
 
-const API_URL = "http://localhost:3000/api/products";
+const API_URL = "https://rif.alwaysdata.net/api/products";
 let allProductsData = []; // Variabel Global
 
 // Elemen Modal & Form

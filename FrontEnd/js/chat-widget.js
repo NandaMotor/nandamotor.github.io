@@ -3,7 +3,7 @@
  * Dengan console logging untuk debugging
  */
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://rif.alwaysdata.net';
 
 console.log('🚀 Chat Widget Loaded');
 console.log('📡 API URL:', API_URL);

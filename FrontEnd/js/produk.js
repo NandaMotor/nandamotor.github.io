@@ -3,7 +3,7 @@
    Deskripsi: Mengelola Tampilan Katalog & Logika Tambah ke Keranjang
    ========================================= */
 
-const API_URL = "http://localhost:3000/api/products";
+const API_URL = "https://rif.alwaysdata.net/api/products";
 
 // --- 1. TAMPILKAN PRODUK (Load Data) ---
 async function tampilkanProduk() {

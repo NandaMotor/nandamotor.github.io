@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", function () {
         submitBtn.innerText = "Memproses...";
         submitBtn.disabled = true;
 
-        const response = await fetch("http://localhost:3000/api/register", {
+        const response = await fetch("https://rif.alwaysdata.net/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nama, email, password }),
@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loginBtn.innerText = "Memproses...";
         loginBtn.disabled = true;
 
-        const response = await fetch("http://localhost:3000/api/login", {
+        const response = await fetch("https://rif.alwaysdata.net/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
