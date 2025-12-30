@@ -573,17 +573,6 @@ app.post("/api/whatsapp/contact-owner", async (req, res) => {
   }
 });
 
-// ============================================
-// TEST AUTO-DEPLOY ENDPOINT
-// ============================================
-app.get('/api/workflow-test', (req, res) => {
-  res.json({ 
-    message: "✅ Auto-deploy SUCCESS!  Workflow triggered by push!",
-    version: "v1.0.4",
-    deployedAt: new Date().toISOString(),
-    trigger: "Automatic (push to Backend/)"
-  });
-});
 
 // Listen server
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
