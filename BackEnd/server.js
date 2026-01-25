@@ -192,8 +192,9 @@ function isValidEmail(email) {
 
 // Helper: Kirim email verifikasi
 async function sendVerificationEmail(email, token, nama) {
-  // Use production URL or fallback to localhost for development
-  const baseUrl = process.env.BASE_URL || 'https://nandamotor.github.io';
+  // Use production URL - hardcoded for AlwaysData deployment
+  const baseUrl = process.env.BASE_URL || 'https://rif.alwaysdata.net';
+  console.log('📧 BASE_URL:', baseUrl); // Debug log
   const verificationUrl = `${baseUrl}/api/verify-email?token=${token}`;
   
   const mailOptions = {
