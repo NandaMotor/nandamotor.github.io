@@ -97,6 +97,14 @@ const db = mysql
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT || 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    maxIdle: 10, // max idle connections
+    idleTimeout: 60000, // idle connections timeout, in milliseconds
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
+    connectTimeout: 20000 // 20 seconds connection timeout
   })
   .promise();
 
@@ -320,11 +328,25 @@ app.get("/api/verify-email", async (req, res) => {
   }
 
   try {
-    // Cari user dengan token
-    const [users] = await db.query(
-      "SELECT * FROM users WHERE verification_token = ?", 
-      [token]
-    );
+    // Cari user dengan token (dengan retry jika ECONNRESET)
+    let users;
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        [users] = await db.query(
+          "SELECT * FROM users WHERE verification_token = ?", 
+          [token]
+        );
+        break; // Success, exit retry loop
+      } catch (dbError) {
+        retries--;
+        if (retries === 0 || dbError.code !== 'ECONNRESET') {
+          throw dbError; // Throw jika bukan ECONNRESET atau retries habis
+        }
+        console.log(`⚠️ ECONNRESET detected, retrying... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+      }
+    }
 
     if (users.length === 0) {
       return res.status(404).send(`
