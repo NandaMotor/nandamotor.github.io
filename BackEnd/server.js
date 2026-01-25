@@ -90,34 +90,33 @@ let waBot = null;
     console.log("🎉 Terhubung ke Database MySQL!");
 
     // Cek Kolom Gambar (Migrasi Otomatis)
-   // Cek Kolom Gambar (Migrasi Otomatis)
-const dbName = process.env. DB_NAME;  // ✅ Pakai database dari . env
-const checkColumn = async (colName) => {
-    const [rows] = await db.query(
-        `SELECT COUNT(*) AS cnt FROM information_schema. COLUMNS WHERE TABLE_SCHEMA = ?  AND TABLE_NAME = 'products' AND COLUMN_NAME = ? `,
-        [dbName, colName]
-    );
-    if (rows[0].cnt === 0) {
-        await db. query(`ALTER TABLE products ADD COLUMN ${colName} VARCHAR(255) NULL`);
-        console.log(`✅ Kolom '${colName}' berhasil ditambahkan. `);
-    }
-};
-await checkColumn('gambar');
-await checkColumn('public_id');
+    const dbName = process.env.DB_NAME;  // ✅ Pakai database dari .env
+    const checkColumn = async (colName) => {
+        const [rows] = await db.query(
+            `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'products' AND COLUMN_NAME = ?`,
+            [dbName, colName]
+        );
+        if (rows[0].cnt === 0) {
+            await db.query(`ALTER TABLE products ADD COLUMN ${colName} VARCHAR(255) NULL`);
+            console.log(`✅ Kolom '${colName}' berhasil ditambahkan.`);
+        }
+    };
+    await checkColumn('gambar');
+    await checkColumn('public_id');
 
-// Cek kolom untuk email verification (users table)
-const checkUserColumn = async (colName, colType, defaultVal = '') => {
-    const [rows] = await db.query(
-        `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`,
-        [dbName, colName]
-    );
-    if (rows[0].cnt === 0) {
-        await db.query(`ALTER TABLE users ADD COLUMN ${colName} ${colType} ${defaultVal}`);
-        console.log(`✅ Kolom '${colName}' berhasil ditambahkan ke tabel users.`);
-    }
-};
-await checkUserColumn('is_verified', 'BOOLEAN', 'DEFAULT 0');
-await checkUserColumn('verification_token', 'VARCHAR(255)', 'NULL');
+    // Cek kolom untuk email verification (users table)
+    const checkUserColumn = async (colName, colType, defaultVal = '') => {
+        const [rows] = await db.query(
+            `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = ?`,
+            [dbName, colName]
+        );
+        if (rows[0].cnt === 0) {
+            await db.query(`ALTER TABLE users ADD COLUMN ${colName} ${colType} ${defaultVal}`);
+            console.log(`✅ Kolom '${colName}' berhasil ditambahkan ke tabel users.`);
+        }
+    };
+    await checkUserColumn('is_verified', 'BOOLEAN', 'DEFAULT 0');
+    await checkUserColumn('verification_token', 'VARCHAR(255)', 'NULL');
 
     // Cek koneksi ke WA Bot API
     try {
