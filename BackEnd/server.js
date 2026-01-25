@@ -572,18 +572,11 @@ app.post("/api/whatsapp/contact-owner", async (req, res) => {
   }
 });
 
-// Di akhir server.js, sebelum app.listen()
+// Start server only if run directly (not imported for testing)
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
-}
-
-module.exports = app; // Export untuk testing
-
-// Listen server
-if (require.main === module) {
-  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
 }
 
 module.exports = app;
