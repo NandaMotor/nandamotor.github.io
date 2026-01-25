@@ -20,11 +20,29 @@ const WA_BOT_API = process.env.WA_BOT_API || "http://localhost:5000";
 // Email Configuration (Nodemailer)
 const emailTransporter = nodemailer.createTransport({
   service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // Use TLS
   auth: {
     user: process.env.EMAIL_USER || 'nandamotor@gmail.com',
     pass: process.env.EMAIL_PASSWORD || 'your-app-password'
+  },
+  tls: {
+    rejectUnauthorized: false // For development
   }
 });
+
+// Test email configuration on startup (optional)
+if (process.env.SKIP_EMAIL_VERIFICATION !== 'true') {
+  emailTransporter.verify(function (error, success) {
+    if (error) {
+      console.log('⚠️ Email transporter error:', error.message);
+      console.log('📧 Email verification will be DISABLED until configuration is fixed.');
+    } else {
+      console.log('✅ Email server is ready to send messages');
+    }
+  });
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -166,7 +184,9 @@ function isValidEmail(email) {
 
 // Helper: Kirim email verifikasi
 async function sendVerificationEmail(email, token, nama) {
-  const verificationUrl = `http://localhost:3000/api/verify-email?token=${token}`;
+  // Use production URL or fallback to localhost for development
+  const baseUrl = process.env.BASE_URL || 'https://nandamotor.github.io';
+  const verificationUrl = `${baseUrl}/api/verify-email?token=${token}`;
   
   const mailOptions = {
     from: process.env.EMAIL_USER || 'Nanda Motor <nandamotor@gmail.com>',
