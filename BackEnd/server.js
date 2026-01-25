@@ -583,4 +583,8 @@ if (require.main === module) {
 module.exports = app; // Export untuk testing
 
 // Listen server
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+}
+
+module.exports = app;
