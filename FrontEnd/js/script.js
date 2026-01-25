@@ -24,7 +24,12 @@ function saveCartSafe(cart) {
         localStorage.setItem('cart', JSON.stringify(cart));
     } catch (e) {
         console.error("⚠️ Gagal simpan LocalStorage:", e);
-        alert("Penyimpanan lokal bermasalah. Data mungkin tidak tersimpan.");
+        Swal.fire({
+            icon: 'warning',
+            title: 'Peringatan',
+            text: 'Penyimpanan lokal bermasalah. Data mungkin tidak tersimpan.',
+            confirmButtonColor: '#3b82f6'
+        });
     }
 }
 
@@ -140,7 +145,12 @@ window.updateQty = function(index, change) {
         } else {
             // Cek stok (jika ada data stok)
             if (cart[index].stok && cart[index].quantity > cart[index].stok) {
-                alert(`Maaf, stok hanya tersedia ${cart[index].stok}`);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stok Terbatas',
+                    text: `Maaf, stok hanya tersedia ${cart[index].stok}`,
+                    confirmButtonColor: '#3b82f6'
+                });
                 cart[index].quantity = cart[index].stok;
             }
         }
@@ -163,7 +173,12 @@ window.hapusItem = function(index) {
 window.checkoutWhatsApp = function() {
     const cart = getCartSafe();
     if (cart.length === 0) {
-        alert("Keranjang Anda kosong!");
+        Swal.fire({
+            icon: 'info',
+            title: 'Keranjang Kosong',
+            text: 'Keranjang Anda kosong!',
+            confirmButtonColor: '#3b82f6'
+        });
         return;
     }
     const namaUser = "Pelanggan"; 
@@ -299,19 +314,34 @@ document.addEventListener("DOMContentLoaded", function () {
       const confirmPassword = document.getElementById("password-confirm-register").value;
 
       if (!email.endsWith("@gmail.com")) {
-        alert("❌ Maaf, hanya email @gmail.com yang diperbolehkan!");
+        Swal.fire({
+            icon: 'error',
+            title: '❌ Email Tidak Valid',
+            text: 'Maaf, hanya email @gmail.com yang diperbolehkan!',
+            confirmButtonColor: '#3b82f6'
+        });
         return;
       }
 
       if (password !== confirmPassword) {
-        alert("Password tidak cocok!");
+        Swal.fire({
+            icon: 'error',
+            title: 'Password Tidak Cocok',
+            text: 'Password tidak cocok!',
+            confirmButtonColor: '#3b82f6'
+        });
         return;
       }
 
       if (typeof grecaptcha !== 'undefined') {
           const captchaResponse = grecaptcha.getResponse();
           if (captchaResponse.length === 0) {
-            alert("⚠️ Harap centang CAPTCHA 'Saya bukan robot'!");
+            Swal.fire({
+                icon: 'warning',
+                title: '⚠️ CAPTCHA Diperlukan',
+                text: 'Harap centang CAPTCHA "Saya bukan robot"!',
+                confirmButtonColor: '#3b82f6'
+            });
             return;
           }
       }
@@ -333,16 +363,32 @@ document.addEventListener("DOMContentLoaded", function () {
         submitBtn.disabled = false;
 
         if (response.ok) {
-          alert("🎉 BERHASIL: " + result.message);
-          document.getElementById("register-form").classList.add("hidden");
-          document.getElementById("login-form").classList.remove("hidden");
-          registerFormElement.reset();
+          Swal.fire({
+            icon: 'success',
+            title: '🎉 Berhasil!',
+            text: result.message,
+            confirmButtonColor: '#3b82f6'
+          }).then(() => {
+            document.getElementById("register-form").classList.add("hidden");
+            document.getElementById("login-form").classList.remove("hidden");
+            registerFormElement.reset();
+          });
         } else {
-          alert("❌ GAGAL: " + result.message);
+          Swal.fire({
+            icon: 'error',
+            title: '❌ Gagal',
+            text: result.message,
+            confirmButtonColor: '#3b82f6'
+          });
         }
       } catch (error) {
         console.error("Error Register:", error);
-        alert("⚠️ Terjadi kesalahan koneksi ke server.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan Koneksi',
+            text: 'Terjadi kesalahan koneksi ke server.',
+            confirmButtonColor: '#3b82f6'
+        });
         document.getElementById("register-submit-btn").disabled = false;
       }
     });
@@ -373,21 +419,39 @@ document.addEventListener("DOMContentLoaded", function () {
         loginBtn.disabled = false;
 
         if (response.ok) {
-          alert("🎉 " + result.message);
-          localStorage.setItem("token", result.token);
-          localStorage.setItem("role", result.role);
+          Swal.fire({
+            icon: 'success',
+            title: '🎉 Berhasil!',
+            text: result.message,
+            confirmButtonColor: '#3b82f6',
+            timer: 1500,
+            showConfirmButton: false
+          }).then(() => {
+            localStorage.setItem("token", result.token);
+            localStorage.setItem("role", result.role);
 
-          if (result.role === "admin") {
-            window.location.href = "admin.html";
-          } else {
-            window.location.href = "index.html";
-          }
+            if (result.role === "admin") {
+              window.location.href = "admin.html";
+            } else {
+              window.location.href = "index.html";
+            }
+          });
         } else {
-          alert("❌ " + result.message);
+          Swal.fire({
+            icon: 'error',
+            title: '❌ Gagal',
+            text: result.message,
+            confirmButtonColor: '#3b82f6'
+          });
         }
       } catch (error) {
         console.error("Error Login:", error);
-        alert("⚠️ Gagal terhubung ke server.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan Koneksi',
+            text: 'Gagal terhubung ke server.',
+            confirmButtonColor: '#3b82f6'
+        });
         loginBtn.innerText = "Login";
         loginBtn.disabled = false;
       }

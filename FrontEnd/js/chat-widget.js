@@ -118,7 +118,12 @@ class ChatWidget {
         console.log('🎬 Starting chat with:', { name, phone });
 
         if (!name) {
-            alert('Nama harus diisi');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nama Diperlukan',
+                text: 'Nama harus diisi',
+                confirmButtonColor: '#3b82f6'
+            });
             console.warn('⚠️ Name is required');
             return;
         }
@@ -283,7 +288,12 @@ class ChatWidget {
         } catch (error) {
             console.error('❌ Error sending message:', error);
             this.typingIndicator.classList.remove('show');
-            alert('Gagal mengirim pesan. Pastikan server berjalan di ' + API_URL);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Mengirim',
+                text: 'Gagal mengirim pesan. Pastikan server berjalan di ' + API_URL,
+                confirmButtonColor: '#3b82f6'
+            });
         }
     }
 

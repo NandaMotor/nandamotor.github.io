@@ -32,18 +32,35 @@ function cekOtorisasiAdmin() {
   const role = localStorage.getItem("role");
 
   if (!token || role !== "admin") {
-    alert("⛔ Akses Ditolak! Anda harus login sebagai Admin.");
-    window.location.href = "login.html";
+    Swal.fire({
+      icon: 'error',
+      title: '⛔ Akses Ditolak!',
+      text: 'Anda harus login sebagai Admin.',
+      confirmButtonColor: '#3b82f6'
+    }).then(() => {
+      window.location.href = "login.html";
+    });
+    return;
   }
 }
 
 // Fungsi Logout
 function logout() {
-  if (confirm("Yakin ingin keluar?")) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    window.location.href = "login.html";
-  }
+  Swal.fire({
+    title: 'Yakin ingin keluar?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3b82f6',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Ya, Keluar',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      window.location.href = "login.html";
+    }
+  });
 }
 
 // --- 2. FUNGSI NAVIGASI (SPA SWITCHING & SIDEBAR ACTIVE) ---
@@ -247,23 +264,54 @@ async function editProduk(id) {
     if(modal) modal.classList.remove("hidden");
   } catch (error) {
     console.error(error);
-    alert("Gagal mengambil data edit.");
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal',
+      text: 'Gagal mengambil data edit.',
+      confirmButtonColor: '#3b82f6'
+    });
   }
 }
 
 async function hapusProduk(id) {
-  if (confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+  const result = await Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: 'Produk ini akan dihapus secara permanen!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal'
+  });
+
+  if (result.isConfirmed) {
     try {
       const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       if (response.ok) {
-        alert("Produk berhasil dihapus!");
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Produk berhasil dihapus!',
+          confirmButtonColor: '#3b82f6'
+        });
         loadAllData();
       } else {
-        alert("Gagal menghapus produk.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Gagal menghapus produk.',
+          confirmButtonColor: '#3b82f6'
+        });
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan koneksi.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Kesalahan Koneksi',
+        text: 'Terjadi kesalahan koneksi.',
+        confirmButtonColor: '#3b82f6'
+      });
     }
   }
 }
@@ -305,15 +353,30 @@ if (formTambahProduk) {
       const result = await response.json();
 
       if (response.ok) {
-        alert(result.message || "Berhasil disimpan!");
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: result.message || 'Produk berhasil disimpan!',
+          confirmButtonColor: '#3b82f6'
+        });
         tutupModal();
         loadAllData();
       } else {
-        alert("Gagal: " + result.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: result.message,
+          confirmButtonColor: '#3b82f6'
+        });
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan saat menyimpan.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Kesalahan',
+        text: 'Terjadi kesalahan saat menyimpan.',
+        confirmButtonColor: '#3b82f6'
+      });
     } finally {
       submitBtn.innerText = textAsli;
       submitBtn.disabled = false;

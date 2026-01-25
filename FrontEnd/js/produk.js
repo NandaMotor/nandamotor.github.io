@@ -101,14 +101,24 @@ async function addToCart(id) {
         if (existingItem) {
             // Cek Stok
             if (existingItem.quantity + 1 > product.stok) {
-                alert(`Maaf, stok mentok! Sisa: ${product.stok}`);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stok Terbatas',
+                    text: `Maaf, stok mentok! Sisa: ${product.stok}`,
+                    confirmButtonColor: '#3b82f6'
+                });
                 return;
             }
             existingItem.quantity += 1;
         } else {
             // Item Baru
             if (product.stok <= 0) {
-                alert("Maaf, stok habis!");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Stok Habis',
+                    text: 'Maaf, stok habis!',
+                    confirmButtonColor: '#3b82f6'
+                });
                 return;
             }
             cart.push({
@@ -138,7 +148,12 @@ async function addToCart(id) {
 
     } catch (error) {
         console.error(error);
-        alert("Gagal menambahkan ke keranjang. Cek koneksi server.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal menambahkan ke keranjang. Cek koneksi server.',
+            confirmButtonColor: '#3b82f6'
+        });
     }
 }
 
