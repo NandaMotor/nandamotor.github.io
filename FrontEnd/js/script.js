@@ -523,11 +523,22 @@ document.addEventListener("DOMContentLoaded", function () {
             
             newBtn.addEventListener("click", function (e) {
               e.preventDefault();
-              if (confirm("Apakah Anda yakin ingin keluar?")) {
-                localStorage.removeItem("token");
-                localStorage.removeItem("role");
-                window.location.href = "index.html";
-              }
+              Swal.fire({
+                title: 'Konfirmasi Logout',
+                text: 'Apakah Anda yakin ingin keluar?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("role");
+                  window.location.href = "index.html";
+                }
+              });
             });
           } else {
             // Jika Belum Login

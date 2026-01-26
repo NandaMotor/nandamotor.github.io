@@ -173,8 +173,18 @@ class ChatWidget {
     }
 
     async initiateOwnerChat() {
-        const confirmMsg = 'Pesan Anda akan diteruskan ke owner via WhatsApp. Owner akan membalas langsung ke nomor WhatsApp Anda. Lanjutkan?';
-        if (!confirm(confirmMsg)) return;
+        const result = await Swal.fire({
+            title: 'Hubungi Owner',
+            text: 'Pesan Anda akan diteruskan ke owner via WhatsApp. Owner akan membalas langsung ke nomor WhatsApp Anda. Lanjutkan?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Lanjutkan',
+            cancelButtonText: 'Batal'
+        });
+
+        if (!result.isConfirmed) return;
 
         console.log('📞 Initiating owner chat...');
 
