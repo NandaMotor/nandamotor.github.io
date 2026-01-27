@@ -1,12 +1,20 @@
 /* =========================================
    FILE: admin.js
-   Deskripsi: Mengelola Dashboard Admin & CRUD Produk (Final Fix: ID Dashboard)
+   Deskripsi: Admin Dashboard, CRUD Produk + Deskripsi & Kategori Dinamis
    ========================================= */
 
 const API_URL = "https://rif.alwaysdata.net/api/products";
-let allProductsData = []; // Variabel Global
+let allProductsData = []; 
+let kategoriList = [];    
 
-// Elemen Modal & Form
+// DEFAULT KATEGORI
+const defaultKategori = [
+    { name: "Oli",       prefix: "OLI" },
+    { name: "Ban",       prefix: "BAN" },
+    { name: "Sparepart", prefix: "SPR" }
+];
+
+// Elemen Modal
 const modal = document.getElementById("modalTambah");
 const modalTitle = document.getElementById("modalTitle");
 const editIdInput = document.getElementById("editIdInput");
@@ -17,6 +25,7 @@ const formTambahProduk = document.getElementById("formTambahProduk");
 // --- 1. INISIALISASI ---
 document.addEventListener("DOMContentLoaded", () => {
   cekOtorisasiAdmin();
+  initKategori(); 
   loadAllData();
   
   const searchInput = document.getElementById("search-input");
@@ -26,200 +35,238 @@ document.addEventListener("DOMContentLoaded", () => {
   if(filterSelect) filterSelect.addEventListener("change", filterProducts);
 });
 
-// Cek Token Admin
-function cekOtorisasiAdmin() {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
-
-  if (!token || role !== "admin") {
-    Swal.fire({
-      icon: 'error',
-      title: '⛔ Akses Ditolak!',
-      text: 'Anda harus login sebagai Admin.',
-      confirmButtonColor: '#3b82f6'
-    }).then(() => {
-      window.location.href = "login.html";
-    });
-    return;
-  }
-}
-
-// Fungsi Logout
-function logout() {
-  Swal.fire({
-    title: 'Yakin ingin keluar?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#3b82f6',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Ya, Keluar',
-    cancelButtonText: 'Batal'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      window.location.href = "login.html";
+// ... (Bagian Kategori Dinamis sama seperti sebelumnya) ...
+function initKategori() {
+    const stored = localStorage.getItem("kategoriList");
+    if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.length > 0 && typeof parsed[0] === 'string') {
+            kategoriList = defaultKategori;
+            localStorage.setItem("kategoriList", JSON.stringify(kategoriList));
+        } else {
+            kategoriList = parsed;
+        }
+    } else {
+        kategoriList = defaultKategori;
+        localStorage.setItem("kategoriList", JSON.stringify(kategoriList));
     }
-  });
+    renderKategoriOptions();
 }
 
-// --- 2. FUNGSI NAVIGASI (SPA SWITCHING & SIDEBAR ACTIVE) ---
-window.switchView = function(viewName) {
-    const dashboardSection = document.getElementById("view-dashboard");
-    const managementSection = document.getElementById("view-management");
+function renderKategoriOptions() {
+    const selectInput = document.getElementById("kategoriInput");
+    const selectFilter = document.getElementById("filter-kategori");
     
-    const navDashboard = document.getElementById("nav-dashboard");
-    const navManagement = document.getElementById("nav-management");
-
-    // Class Helper
-    const activeClasses = ["bg-blue-600", "text-white", "shadow-md"];
-    const inactiveClasses = ["text-gray-400", "hover:text-white", "hover:bg-gray-700"];
-
-    function setInactive(el) {
-        if (!el) return;
-        el.classList.remove(...activeClasses);
-        el.classList.add(...inactiveClasses);
+    if(selectInput) {
+        const oldValue = selectInput.value;
+        selectInput.innerHTML = "";
+        kategoriList.forEach(kat => {
+            const opt = document.createElement("option");
+            opt.value = kat.name;
+            opt.textContent = `${kat.name} (Kode: ${kat.prefix})`;
+            selectInput.appendChild(opt);
+        });
+        const exists = kategoriList.some(k => k.name === oldValue);
+        if(exists) selectInput.value = oldValue;
     }
 
-    function setActive(el) {
-        if (!el) return;
-        el.classList.remove(...inactiveClasses);
-        el.classList.add(...activeClasses);
+    if(selectFilter) {
+        const oldFilter = selectFilter.value;
+        selectFilter.innerHTML = '<option value="all">Semua Kategori</option>';
+        kategoriList.forEach(kat => {
+            const opt = document.createElement("option");
+            opt.value = kat.name;
+            opt.textContent = kat.name;
+            selectFilter.appendChild(opt);
+        });
+        selectFilter.value = oldFilter;
     }
+}
 
-    if (viewName === 'dashboard') {
-        dashboardSection.classList.remove("hidden");
-        managementSection.classList.add("hidden");
-        setActive(navDashboard);
-        setInactive(navManagement);
-    } else if (viewName === 'management') {
-        dashboardSection.classList.add("hidden");
-        managementSection.classList.remove("hidden");
-        setInactive(navDashboard);
-        setActive(navManagement);
-        if (typeof filterProducts === "function") filterProducts();
+window.tambahKategoriBaru = async function() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Tambah Kategori Baru',
+        html:
+            '<div class="text-left">' +
+            '<label class="block text-sm font-bold text-gray-700 mb-1">Nama Kategori</label>' +
+            '<input id="swal-input-name" class="swal2-input m-0 mb-3 w-full" placeholder="Contoh: Aksesoris">' +
+            '<label class="block text-sm font-bold text-gray-700 mb-1">Kode ID (Prefix)</label>' +
+            '<input id="swal-input-prefix" class="swal2-input m-0 w-full" placeholder="Contoh: AKS" style="text-transform:uppercase">' +
+            '</div>',
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Tambah',
+        confirmButtonColor: '#10b981',
+        preConfirm: () => {
+            const name = document.getElementById('swal-input-name').value;
+            const prefix = document.getElementById('swal-input-prefix').value.toUpperCase();
+            
+            if (!name || !prefix) { Swal.showValidationMessage('Nama dan Kode harus diisi!'); return false; }
+            if (kategoriList.some(k => k.name.toLowerCase() === name.toLowerCase())) { Swal.showValidationMessage('Kategori sudah ada!'); return false; }
+            return { name: name, prefix: prefix };
+        }
+    });
+
+    if (formValues) {
+        kategoriList.push(formValues);
+        localStorage.setItem("kategoriList", JSON.stringify(kategoriList));
+        renderKategoriOptions();
+        const selectInput = document.getElementById("kategoriInput");
+        if(selectInput) selectInput.value = formValues.name;
+        Swal.fire({ icon: 'success', title: 'Berhasil', text: `Kategori ditambahkan`, timer: 1500, showConfirmButton: false });
     }
 };
 
-/* =========================================
-   3. LOGIKA DATA (FETCH & RENDER)
-   ========================================= */
+window.hapusKategoriTerpilih = async function() {
+    const selectInput = document.getElementById("kategoriInput");
+    if(!selectInput || !selectInput.value) { Swal.fire('Error', 'Pilih kategori dulu', 'error'); return; }
+    
+    const selectedName = selectInput.value;
+    const result = await Swal.fire({ title: 'Hapus Kategori?', text: `Hapus "${selectedName}"?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' });
 
+    if (result.isConfirmed) {
+        kategoriList = kategoriList.filter(k => k.name !== selectedName);
+        localStorage.setItem("kategoriList", JSON.stringify(kategoriList));
+        renderKategoriOptions();
+        Swal.fire({ icon: 'success', title: 'Terhapus', timer: 1500, showConfirmButton: false });
+    }
+};
+
+// ... (Bagian Navigasi & Otorisasi sama) ...
+function cekOtorisasiAdmin() {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  if (!token || role !== "admin") {
+    window.location.href = "login.html";
+  }
+}
+
+function logout() {
+  Swal.fire({ title: 'Keluar?', icon: 'question', showCancelButton: true, confirmButtonColor: '#3b82f6' }).then((res) => {
+    if (res.isConfirmed) { localStorage.clear(); window.location.href = "login.html"; }
+  });
+}
+
+window.switchView = function(viewName) {
+    const sections = ["dashboard", "management", "stats"];
+    sections.forEach(s => {
+        document.getElementById(`view-${s}`).classList.add("hidden");
+        const nav = document.getElementById(`nav-${s}`);
+        if(nav) { nav.classList.remove("bg-blue-600", "text-white", "shadow-md"); nav.classList.add("text-gray-400", "hover:text-white"); }
+    });
+
+    document.getElementById(`view-${viewName}`).classList.remove("hidden");
+    const activeNav = document.getElementById(`nav-${viewName}`);
+    if(activeNav) { activeNav.classList.remove("text-gray-400"); activeNav.classList.add("bg-blue-600", "text-white", "shadow-md"); }
+    
+    if (viewName === 'management') filterProducts();
+    if (viewName === 'stats') calculateStats();
+};
+
+function calculateStats() {
+    if (allProductsData.length === 0) return;
+    let totalAset = 0;
+    let kategoriCount = {};
+    
+    allProductsData.forEach(prod => {
+        totalAset += (prod.harga * prod.stok);
+        if(!kategoriCount[prod.kategori]) kategoriCount[prod.kategori] = 0;
+        kategoriCount[prod.kategori]++;
+    });
+
+    document.getElementById("total-asset-value").innerText = "Rp " + totalAset.toLocaleString("id-ID");
+    const chartContainer = document.getElementById("category-chart");
+    if(chartContainer) {
+        chartContainer.innerHTML = "";
+        const totalItems = allProductsData.length;
+        for (const [kat, count] of Object.entries(kategoriCount)) {
+            const percentage = Math.round((count / totalItems) * 100);
+            let color = "bg-blue-500";
+            if(kat === "Oli") color = "bg-yellow-400";
+            else if(kat === "Ban") color = "bg-gray-800";
+            else if(kat === "Sparepart") color = "bg-green-500";
+
+            chartContainer.insertAdjacentHTML("beforeend", `<div><div class="flex justify-between text-sm mb-1"><span class="font-semibold text-gray-700">${kat}</span><span class="text-gray-500">${count} (${percentage}%)</span></div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="${color} h-2.5 rounded-full" style="width: ${percentage}%"></div></div></div>`);
+        }
+    }
+    
+    const topStockList = document.getElementById("top-stock-list");
+    if(topStockList) {
+        topStockList.innerHTML = "";
+        [...allProductsData].sort((a, b) => b.stok - a.stok).slice(0, 5).forEach(prod => {
+            topStockList.insertAdjacentHTML("beforeend", `<li class="flex justify-between items-center border-b pb-2"><div class="flex items-center"><div class="bg-blue-100 text-blue-600 font-bold w-8 h-8 rounded flex items-center justify-center mr-3 text-xs">${prod.stok}</div><span class="text-gray-700 text-sm">${prod.nama_produk}</span></div><span class="text-xs font-bold text-gray-400">Rp ${parseInt(prod.harga).toLocaleString("id-ID")}</span></li>`);
+        });
+    }
+}
+
+// ... (Bagian Fetch Data) ...
 async function loadAllData() {
     try {
         const response = await fetch(API_URL);
         const products = await response.json();
-        
         allProductsData = products.reverse(); 
-        
-        // A. Render Statistik
-        const elTotal = document.getElementById("total-produk-count");
-        if(elTotal) elTotal.innerText = products.length;
-        
-        // B. Render Tabel Dashboard (5 Teratas)
+        document.getElementById("total-produk-count").innerText = products.length;
         renderDashboardTable(allProductsData.slice(0, 5));
-
-        // C. Render Tabel Management (Semua)
         renderManagementTable(allProductsData);
-
-    } catch (error) {
-        console.error("Gagal load data:", error);
-    }
+    } catch (error) { console.error("Gagal load data:", error); }
 }
 
-// --- RENDER TABEL DASHBOARD (FIXED: ID FORMAT) ---
+function getKategoriPrefix(kategoriName) {
+    const kat = kategoriList.find(k => k.name === kategoriName);
+    return kat ? kat.prefix : "PRD";
+}
+
 function renderDashboardTable(data) {
     const tbody = document.getElementById("dashboard-table-body");
-    if(!tbody) return;
-    tbody.innerHTML = "";
-
+    if(!tbody) return; tbody.innerHTML = "";
     data.forEach(produk => {
-        // 1. LOGIKA ID (Disamakan dengan Management)
-        let prefix = "PRD";
-        if (produk.kategori === "Oli") prefix = "OLI";
-        else if (produk.kategori === "Ban") prefix = "BAN";
-        else if (produk.kategori === "Sparepart") prefix = "SPR";
-        else if (produk.kategori === "Service") prefix = "SRV";
-        
+        const prefix = getKategoriPrefix(produk.kategori);
         const displayID = `${prefix}-${String(produk.id).padStart(3, "0")}`;
-
-        // 2. Style Stok
         const stokClass = produk.stok < 5 ? "text-red-500 font-bold" : "text-green-600 font-bold";
-        
-        const row = `
-            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="py-3 px-6 text-left text-blue-600 font-bold">${displayID}</td>
-                <td class="py-3 px-6 text-center"><img src="${produk.gambar || 'https://via.placeholder.com/40'}" class="w-8 h-8 rounded-full mx-auto border object-cover"></td>
-                <td class="py-3 px-6 text-left">${produk.nama_produk}</td>
-                <td class="py-3 px-6 text-center"><span class="bg-gray-200 px-2 py-1 rounded text-xs text-gray-700">${produk.kategori}</span></td>
-                <td class="py-3 px-6 text-right">Rp ${parseInt(produk.harga).toLocaleString("id-ID")}</td>
-                <td class="py-3 px-6 text-center ${stokClass}">${produk.stok}</td>
-            </tr>
-        `;
-        tbody.insertAdjacentHTML("beforeend", row);
+        tbody.insertAdjacentHTML("beforeend", `<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6 text-blue-600 font-bold">${displayID}</td><td class="text-center"><img src="${produk.gambar || 'https://via.placeholder.com/40'}" class="w-8 h-8 rounded-full mx-auto border object-cover"></td><td>${produk.nama_produk}</td><td class="text-center"><span class="bg-gray-200 px-2 py-1 rounded text-xs text-gray-700">${produk.kategori}</span></td><td class="text-right">Rp ${parseInt(produk.harga).toLocaleString("id-ID")}</td><td class="text-center ${stokClass}">${produk.stok}</td></tr>`);
     });
 }
 
-// --- RENDER TABEL MANAJEMEN ---
 function renderManagementTable(data) {
     const tbody = document.getElementById("management-table-body");
     const noDataMsg = document.getElementById("no-data-msg");
+    if(!tbody) return; tbody.innerHTML = "";
     
-    if(!tbody) return;
-    tbody.innerHTML = "";
-
-    if (data.length === 0) {
-        if(noDataMsg) noDataMsg.classList.remove("hidden");
-    } else {
-        if(noDataMsg) noDataMsg.classList.add("hidden");
-    }
+    if (data.length === 0) noDataMsg.classList.remove("hidden");
+    else noDataMsg.classList.add("hidden");
 
     data.forEach(produk => {
-        let prefix = "PRD";
-        if (produk.kategori === "Oli") prefix = "OLI";
-        else if (produk.kategori === "Ban") prefix = "BAN";
-        else if (produk.kategori === "Sparepart") prefix = "SPR";
-        else if (produk.kategori === "Service") prefix = "SRV";
-        
+        const prefix = getKategoriPrefix(produk.kategori);
         const displayID = `${prefix}-${String(produk.id).padStart(3, "0")}`;
         const stokClass = produk.stok < 5 ? "text-red-500 font-bold" : "text-green-600 font-bold";
 
-        const row = `
-            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="py-3 px-6 text-left text-blue-600 font-bold whitespace-nowrap">${displayID}</td>
-                <td class="py-3 px-6 text-center"><img src="${produk.gambar || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full mx-auto border object-cover"></td>
-                <td class="py-3 px-6 text-left font-medium">${produk.nama_produk}</td>
-                <td class="py-3 px-6 text-center"><span class="bg-blue-100 text-blue-600 py-1 px-3 rounded-full text-xs font-semibold">${produk.kategori}</span></td>
-                <td class="py-3 px-6 text-right font-bold text-gray-600">Rp ${parseInt(produk.harga).toLocaleString("id-ID")}</td>
-                <td class="py-3 px-6 text-center ${stokClass}">${produk.stok}</td>
-                <td class="py-3 px-6 text-center">
+        tbody.insertAdjacentHTML("beforeend", `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="py-3 px-6 text-blue-600 font-bold whitespace-nowrap">${displayID}</td>
+                <td class="text-center"><img src="${produk.gambar || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full mx-auto border object-cover"></td>
+                <td class="font-medium">${produk.nama_produk}</td>
+                <td class="text-center"><span class="bg-blue-100 text-blue-600 py-1 px-3 rounded-full text-xs font-semibold">${produk.kategori}</span></td>
+                <td class="text-right font-bold text-gray-600">Rp ${parseInt(produk.harga).toLocaleString("id-ID")}</td>
+                <td class="text-center ${stokClass}">${produk.stok}</td>
+                <td class="text-center">
                     <div class="flex item-center justify-center space-x-2">
-                        <button onclick="editProduk(${produk.id})" class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center transition" title="Edit"><i class="fas fa-edit"></i></button>
-                        <button onclick="hapusProduk(${produk.id})" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition" title="Hapus"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="editProduk(${produk.id})" class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center transition"><i class="fas fa-edit"></i></button>
+                        <button onclick="hapusProduk(${produk.id})" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </td>
             </tr>
-        `;
-        tbody.insertAdjacentHTML("beforeend", row);
+        `);
     });
 }
 
-// --- LOGIKA FILTER & SEARCH ---
 function filterProducts() {
-    const searchTerm = document.getElementById("search-input").value.toLowerCase();
-    const categoryFilter = document.getElementById("filter-kategori").value;
-
-    const filteredData = allProductsData.filter(produk => {
-        const matchName = produk.nama_produk.toLowerCase().includes(searchTerm);
-        const matchCategory = categoryFilter === "all" || produk.kategori === categoryFilter;
-        return matchName && matchCategory;
-    });
-
-    renderManagementTable(filteredData);
+    const term = document.getElementById("search-input").value.toLowerCase();
+    const kat = document.getElementById("filter-kategori").value;
+    renderManagementTable(allProductsData.filter(p => p.nama_produk.toLowerCase().includes(term) && (kat === "all" || p.kategori === kat)));
 }
 
 /* =========================================
-   4. LOGIKA MODAL (BUKA/TUTUP)
+   LOGIKA MODAL (BUKA/TUTUP)
    ========================================= */
 function bukaModal() {
   if(!modal) return;
@@ -229,18 +276,19 @@ function bukaModal() {
   if(modalTitle) modalTitle.innerText = "Tambah Produk Baru";
   if (imgPreview) imgPreview.src = "";
   if (previewContainer) previewContainer.classList.add("hidden");
+  
+  // RESET DESKRIPSI (PENTING!)
+  document.getElementById("deskripsiInput").value = ""; 
+
+  const selectInput = document.getElementById("kategoriInput");
+  if(selectInput && selectInput.options.length > 0) selectInput.selectedIndex = 0;
 }
 
-function tutupModal() {
-  if(modal) modal.classList.add("hidden");
-}
-
-window.onclick = function(event) {
-    if (event.target == modal) tutupModal();
-}
+function tutupModal() { if(modal) modal.classList.add("hidden"); }
+window.onclick = function(e) { if (e.target == modal) tutupModal(); }
 
 /* =========================================
-   5. LOGIKA EDIT & HAPUS
+   LOGIKA EDIT & HAPUS
    ========================================= */
 async function editProduk(id) {
   try {
@@ -248,139 +296,81 @@ async function editProduk(id) {
     const produk = await response.json();
 
     document.getElementById("namaInput").value = produk.nama_produk;
+    
+    // --- UPDATE: ISI DESKRIPSI ---
+    // Jika di database NULL, isi dengan string kosong ""
+    document.getElementById("deskripsiInput").value = produk.deskripsi || "";
+    
     document.getElementById("hargaInput").value = produk.harga;
     document.getElementById("stokInput").value = produk.stok;
+    
+    // Logika cek kategori ada/tidak
+    const exists = kategoriList.some(k => k.name === produk.kategori);
+    if (!exists) {
+         const newPrefix = produk.kategori.substring(0,3).toUpperCase();
+         kategoriList.push({ name: produk.kategori, prefix: newPrefix });
+         localStorage.setItem("kategoriList", JSON.stringify(kategoriList));
+         renderKategoriOptions();
+    }
     document.getElementById("kategoriInput").value = produk.kategori;
     if(editIdInput) editIdInput.value = produk.id;
 
     if (produk.gambar && imgPreview && previewContainer) {
       imgPreview.src = produk.gambar;
       previewContainer.classList.remove("hidden");
-    } else if (previewContainer) {
-      previewContainer.classList.add("hidden");
-    }
+    } else { previewContainer.classList.add("hidden"); }
 
     if(modalTitle) modalTitle.innerText = "Edit Produk";
     if(modal) modal.classList.remove("hidden");
-  } catch (error) {
-    console.error(error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Gagal',
-      text: 'Gagal mengambil data edit.',
-      confirmButtonColor: '#3b82f6'
-    });
-  }
+  } catch (error) { console.error(error); Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal data edit.' }); }
 }
 
 async function hapusProduk(id) {
-  const result = await Swal.fire({
-    title: 'Apakah Anda yakin?',
-    text: 'Produk ini akan dihapus secara permanen!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Ya, Hapus!',
-    cancelButtonText: 'Batal'
-  });
-
+  const result = await Swal.fire({ title: 'Yakin hapus?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' });
   if (result.isConfirmed) {
     try {
       const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      if (response.ok) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: 'Produk berhasil dihapus!',
-          confirmButtonColor: '#3b82f6'
-        });
-        loadAllData();
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal',
-          text: 'Gagal menghapus produk.',
-          confirmButtonColor: '#3b82f6'
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Kesalahan Koneksi',
-        text: 'Terjadi kesalahan koneksi.',
-        confirmButtonColor: '#3b82f6'
-      });
-    }
+      if (response.ok) { Swal.fire({ icon: 'success', title: 'Terhapus!' }); loadAllData(); }
+    } catch (error) { Swal.fire({ icon: 'error', title: 'Error Koneksi' }); }
   }
 }
 
 /* =========================================
-   6. LOGIKA SUBMIT (TAMBAH/UPDATE)
+   LOGIKA SUBMIT (TAMBAH/UPDATE)
    ========================================= */
 if (formTambahProduk) {
   formTambahProduk.addEventListener("submit", async function (e) {
     e.preventDefault();
-
     const id = editIdInput.value;
     const submitBtn = this.querySelector('button[type="submit"]');
     const textAsli = submitBtn.innerText;
-
-    submitBtn.innerText = "Mengupload...";
-    submitBtn.disabled = true;
+    submitBtn.innerText = "Mengupload..."; submitBtn.disabled = true;
 
     const formData = new FormData();
     formData.append("nama_produk", document.getElementById("namaInput").value);
+    
+    // --- UPDATE: KIRIM DESKRIPSI ---
+    formData.append("deskripsi", document.getElementById("deskripsiInput").value);
+    
     formData.append("harga", document.getElementById("hargaInput").value);
     formData.append("stok", document.getElementById("stokInput").value);
     formData.append("kategori", document.getElementById("kategoriInput").value);
 
     const fileGambar = document.getElementById("gambarInput").files[0];
-    if (fileGambar) {
-      formData.append("gambar", fileGambar);
-    }
+    if (fileGambar) formData.append("gambar", fileGambar);
 
     try {
       let url = id ? `${API_URL}/${id}` : API_URL;
       let method = id ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method: method,
-        body: formData,
-      });
-
+      const response = await fetch(url, { method: method, body: formData });
       const result = await response.json();
 
       if (response.ok) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: result.message || 'Produk berhasil disimpan!',
-          confirmButtonColor: '#3b82f6'
-        });
-        tutupModal();
-        loadAllData();
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal',
-          text: result.message,
-          confirmButtonColor: '#3b82f6'
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Kesalahan',
-        text: 'Terjadi kesalahan saat menyimpan.',
-        confirmButtonColor: '#3b82f6'
-      });
-    } finally {
-      submitBtn.innerText = textAsli;
-      submitBtn.disabled = false;
-    }
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: result.message });
+        tutupModal(); loadAllData();
+      } else { Swal.fire({ icon: 'error', title: 'Gagal', text: result.message }); }
+    } catch (error) { Swal.fire({ icon: 'error', title: 'Error' }); } 
+    finally { submitBtn.innerText = textAsli; submitBtn.disabled = false; }
   });
 }
 
@@ -391,10 +381,7 @@ if (gambarInputEl) {
     const file = e.target.files[0];
     if (file && imgPreview && previewContainer) {
       const reader = new FileReader();
-      reader.onload = function (e) {
-        imgPreview.src = e.target.result;
-        previewContainer.classList.remove("hidden");
-      };
+      reader.onload = function (e) { imgPreview.src = e.target.result; previewContainer.classList.remove("hidden"); };
       reader.readAsDataURL(file);
     }
   });

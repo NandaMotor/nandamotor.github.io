@@ -4,21 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard | Nanda Motor</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <style>
-      input::-webkit-outer-spin-button,
-      input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-    </style>
+    <style>input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {-webkit-appearance: none; margin: 0;}</style>
   </head>
 
   <body class="bg-gray-100 font-sans">
@@ -30,46 +19,25 @@
         </div>
 
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-          <a
-            href="#"
-            id="nav-dashboard"
-            onclick="switchView('dashboard')"
-            class="flex items-center py-3 px-4 rounded transition duration-200 bg-blue-600 text-white shadow-md group"
-          >
-    <i class="fas fa-tachometer-alt w-6 text-center group-hover:scale-110 transition-transform"></i>
-    <span class="ml-3 font-medium">Dashboard</span>
-  </a>
+          <a href="#" id="nav-dashboard" onclick="switchView('dashboard')" class="flex items-center py-3 px-4 rounded transition duration-200 bg-blue-600 text-white shadow-md group">
+            <i class="fas fa-tachometer-alt w-6 text-center group-hover:scale-110 transition-transform"></i>
+            <span class="ml-3 font-medium">Dashboard</span>
+          </a>
+          <a href="#" id="nav-management" onclick="switchView('management')" class="flex items-center py-3 px-4 rounded transition duration-200 hover:bg-gray-700 text-gray-400 hover:text-white group">
+            <i class="fas fa-box w-6 text-center group-hover:scale-110 transition-transform"></i>
+            <span class="ml-3 font-medium">Manajemen Produk</span>
+          </a>
+          <a href="#" id="nav-stats" onclick="switchView('stats')" class="flex items-center py-3 px-4 rounded transition duration-200 hover:bg-gray-700 text-gray-400 hover:text-white group">
+            <i class="fas fa-chart-pie w-6 text-center group-hover:scale-110 transition-transform"></i>
+            <span class="ml-3 font-medium">Statistik Inventaris</span>
+          </a>
+        </nav>
 
-  <a
-    href="#"
-    id="nav-management"
-    onclick="switchView('management')"
-    class="flex items-center py-3 px-4 rounded transition duration-200 hover:bg-gray-700 text-gray-400 hover:text-white group"
-  >
-    <i class="fas fa-box w-6 text-center group-hover:scale-110 transition-transform"></i>
-    <span class="ml-3 font-medium">Manajemen Produk</span>
-  </a>
-
-  <a
-    href="#"
-    class="flex items-center py-3 px-4 rounded transition duration-200 hover:bg-gray-700 text-gray-400 hover:text-white group cursor-not-allowed opacity-50"
-  >
-    <i class="fas fa-users w-6 text-center"></i>
-    <span class="ml-3 font-medium">Data Produk</span>
-  </a>
-</nav>
         <div class="p-4 border-t border-gray-700 space-y-3">
-          <a
-            href="index.html"
-            class="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded text-white transition text-center shadow"
-          >
+          <a href="index.html" class="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded text-white transition text-center shadow">
             <i class="fas fa-globe mr-2"></i> Lihat Website
           </a>
-
-          <button
-            onclick="logout()"
-            class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded text-white transition shadow"
-          >
+          <button onclick="logout()" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded text-white transition shadow">
             <i class="fas fa-sign-out-alt mr-2"></i> Logout
           </button>
         </div>
@@ -78,14 +46,11 @@
       <div class="flex-1 flex flex-col overflow-hidden">
         <header class="bg-white shadow p-4 flex justify-between items-center z-10">
           <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-bars text-gray-400 mr-2 lg:hidden"></i>
-            Admin Area
+            <i class="fas fa-bars text-gray-400 mr-2 lg:hidden"></i> Admin Area
           </h2>
           <div class="flex items-center space-x-4">
             <span class="text-gray-600 hidden sm:block">Halo, Admin</span>
-            <div class="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-              A
-            </div>
+            <div class="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">A</div>
           </div>
         </header>
 
@@ -93,49 +58,29 @@
           
           <section id="view-dashboard">
             <h3 class="text-3xl font-medium text-gray-700 mb-6">Dashboard Overview</h3>
-            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 transform hover:-translate-y-1 transition duration-300">
                 <div class="flex items-center">
-                  <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4">
-                    <i class="fas fa-box fa-2x"></i>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500 font-semibold uppercase">Total Produk</p>
-                    <p class="text-2xl font-bold text-gray-800" id="total-produk-count">0</p>
-                  </div>
+                  <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4"><i class="fas fa-box fa-2x"></i></div>
+                  <div><p class="text-sm text-gray-500 font-semibold uppercase">Total Produk</p><p class="text-2xl font-bold text-gray-800" id="total-produk-count">0</p></div>
                 </div>
               </div>
-
               <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 transform hover:-translate-y-1 transition duration-300">
                 <div class="flex items-center">
-                  <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4">
-                    <i class="fas fa-users fa-2x"></i>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500 font-semibold uppercase">Total User</p>
-                    <p class="text-2xl font-bold text-gray-800">1</p>
-                  </div>
+                  <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4"><i class="fas fa-users fa-2x"></i></div>
+                  <div><p class="text-sm text-gray-500 font-semibold uppercase">Total User</p><p class="text-2xl font-bold text-gray-800">1</p></div>
                 </div>
               </div>
-
               <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500 transform hover:-translate-y-1 transition duration-300">
                 <div class="flex items-center">
-                  <div class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4">
-                    <i class="fas fa-shopping-cart fa-2x"></i>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500 font-semibold uppercase">Pesanan Baru</p>
-                    <p class="text-2xl font-bold text-gray-800">0</p>
-                  </div>
+                  <div class="p-3 rounded-full bg-yellow-100 text-yellow-500 mr-4"><i class="fas fa-shopping-cart fa-2x"></i></div>
+                  <div><p class="text-sm text-gray-500 font-semibold uppercase">Pesanan Baru</p><p class="text-2xl font-bold text-gray-800">0</p></div>
                 </div>
               </div>
             </div>
 
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="p-4 border-b border-gray-200 bg-gray-50">
-                <h3 class="font-bold text-gray-700">Produk Terbaru Ditambahkan</h3>
-              </div>
+              <div class="p-4 border-b border-gray-200 bg-gray-50"><h3 class="font-bold text-gray-700">Produk Terbaru Ditambahkan</h3></div>
               <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
@@ -148,8 +93,7 @@
                         <th class="py-3 px-6 text-center w-20">Stok</th>
                       </tr>
                     </thead>
-                    <tbody id="dashboard-table-body" class="text-gray-600 text-sm font-light">
-                      </tbody>
+                    <tbody id="dashboard-table-body" class="text-gray-600 text-sm font-light"></tbody>
                 </table>
               </div>
               <div class="p-3 bg-gray-50 text-center border-t border-gray-200">
@@ -165,27 +109,18 @@
                     <i class="fas fa-plus mr-2"></i> Tambah Produk
                 </button>
             </div>
-    
             <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div class="relative w-full md:w-1/3">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-search"></i>
-                    </span>
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-search"></i></span>
                     <input type="text" id="search-input" placeholder="Cari nama produk..." class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
                 </div>
-    
                 <div class="flex items-center gap-3 w-full md:w-auto">
                     <label class="font-semibold text-gray-600 text-sm"><i class="fas fa-filter mr-1"></i> Filter:</label>
                     <select id="filter-kategori" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 cursor-pointer transition">
                         <option value="all">Semua Kategori</option>
-                        <option value="Oli">Oli</option>
-                        <option value="Ban">Ban</option>
-                        <option value="Sparepart">Sparepart</option>
-                        <option value="Service">Service</option>
                     </select>
                 </div>
             </div>
-    
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white table-auto">
@@ -200,8 +135,7 @@
                                 <th class="py-3 px-6 text-center w-24">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="management-table-body" class="text-gray-600 text-sm font-light">
-                            </tbody>
+                        <tbody id="management-table-body" class="text-gray-600 text-sm font-light"></tbody>
                     </table>
                 </div>
                 <div id="no-data-msg" class="hidden text-center py-12 text-gray-400">
@@ -211,22 +145,37 @@
             </div>
           </section>
 
+          <section id="view-stats" class="hidden">
+            <h3 class="text-3xl font-medium text-gray-700 mb-6">Analisis & Valuasi Aset</h3>
+            <div class="bg-gradient-to-r from-blue-600 to-blue-400 rounded-lg shadow-lg p-6 mb-8 text-white">
+              <div class="flex justify-between items-center">
+                <div><h4 class="text-lg font-semibold opacity-90">Total Nilai Aset Produk</h4><p class="text-xs opacity-75">Akumulasi (Harga x Stok) seluruh produk</p></div>
+                <i class="fas fa-wallet text-4xl opacity-50"></i>
+              </div>
+              <h2 class="text-4xl font-bold mt-4" id="total-asset-value">Rp 0</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-white rounded-lg shadow p-6">
+                <h4 class="font-bold text-gray-700 mb-4 border-b pb-2">Sebaran Kategori</h4>
+                <div id="category-chart" class="space-y-4"></div>
+              </div>
+              <div class="bg-white rounded-lg shadow p-6">
+                <h4 class="font-bold text-gray-700 mb-4 border-b pb-2">Stok Paling Menumpuk</h4>
+                <ul id="top-stock-list" class="space-y-3"></ul>
+              </div>
+            </div>
+          </section>
+
         </main>
       </div>
     </div>
 
-    <div
-      id="modalTambah"
-      class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity"
-    >
-      <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg transform transition-all scale-100">
+    <div id="modalTambah" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
+      <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
+        
         <div class="flex justify-between items-center mb-6">
-            <h2 id="modalTitle" class="text-2xl font-bold text-gray-800">
-              Tambah Produk Baru
-            </h2>
-            <button onclick="tutupModal()" class="text-gray-400 hover:text-gray-600 transition">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+            <h2 id="modalTitle" class="text-2xl font-bold text-gray-800">Tambah Produk Baru</h2>
+            <button onclick="tutupModal()" class="text-gray-400 hover:text-gray-600 transition"><i class="fas fa-times text-xl"></i></button>
         </div>
 
         <form id="formTambahProduk">
@@ -234,53 +183,34 @@
           
           <div class="mb-5">
             <label class="block text-gray-700 text-sm font-bold mb-2">Nama Produk</label>
-            <input
-              type="text"
-              id="namaInput"
-              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              placeholder="Contoh: Oli Yamalube Sport"
-              required
-            />
+            <input type="text" id="namaInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Contoh: Oli Yamalube Sport" required />
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi Produk</label>
+            <textarea id="deskripsiInput" rows="3" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Contoh: Oli matic standar Honda..."></textarea>
           </div>
 
           <div class="flex gap-4 mb-5">
             <div class="w-1/2">
               <label class="block text-gray-700 text-sm font-bold mb-2">Harga (Rp)</label>
-              <input
-                type="number"
-                id="hargaInput"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                placeholder="50000"
-                required
-              />
+              <input type="number" id="hargaInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="50000" required />
             </div>
             <div class="w-1/2">
               <label class="block text-gray-700 text-sm font-bold mb-2">Stok</label>
-              <input
-                type="number"
-                id="stokInput"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                placeholder="10"
-                required
-              />
+              <input type="number" id="stokInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="10" required />
             </div>
           </div>
 
           <div class="mb-5">
             <label class="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
-            <div class="relative">
-                <select
-                  id="kategoriInput"
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white transition cursor-pointer"
-                >
-                  <option value="Oli">Oli</option>
-                  <option value="Ban">Ban</option>
-                  <option value="Sparepart">Sparepart</option>
-                  <option value="Service">Service</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <i class="fas fa-chevron-down text-xs"></i>
+            <div class="flex gap-2">
+                <div class="relative w-full">
+                    <select id="kategoriInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white transition cursor-pointer"></select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><i class="fas fa-chevron-down text-xs"></i></div>
                 </div>
+                <button type="button" onclick="tambahKategoriBaru()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition" title="Tambah Kategori Baru"><i class="fas fa-plus"></i></button>
+                <button type="button" onclick="hapusKategoriTerpilih()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition" title="Hapus Kategori Terpilih"><i class="fas fa-trash"></i></button>
             </div>
           </div>
 
@@ -295,32 +225,19 @@
                     <input id="gambarInput" type="file" accept="image/*" class="hidden" />
                 </label>
             </div>
-            
             <div id="previewContainer" class="hidden mt-4 text-center">
                 <p class="text-xs text-gray-500 mb-2">Preview Gambar:</p>
-                <img id="imgPreview" src="" alt="Preview" class="max-h-32 mx-auto rounded shadow-sm border" />
+                <img id="imgPreview" src="" alt="Preview" class="max-h-48 mx-auto rounded shadow-sm border object-contain" />
             </div>
           </div>
 
-          <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <button
-              type="button"
-              onclick="tutupModal()"
-              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg transition"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition transform active:scale-95"
-            >
-              Simpan
-            </button>
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
+            <button type="button" onclick="tutupModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg transition">Batal</button>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition transform active:scale-95">Simpan</button>
           </div>
         </form>
       </div>
     </div>
-
     <script src="js/admin.js"></script>
   </body>
 </html>
