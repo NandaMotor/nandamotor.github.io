@@ -360,3 +360,139 @@ if (gambarInputEl) {
     }
   });
 }
+
+// --- EXPORT FUNCTIONS ---
+
+// Get currently displayed products (respecting filters)
+function getCurrentProducts() {
+    const term = document.getElementById("search-input")?.value.toLowerCase() || "";
+    const kat = document.getElementById("filter-kategori")?.value || "all";
+    
+    return allProductsData.filter(p => 
+        p.nama_produk.toLowerCase().includes(term) && 
+        (kat === "all" || p.kategori === kat)
+    );
+}
+
+// Generate timestamp for filenames
+function getTimestamp() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}${month}${day}_${hours}${minutes}`;
+}
+
+// Export to PDF
+window.exportToPDF = function() {
+    const products = getCurrentProducts();
+    
+    if (products.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Tidak Ada Data',
+            text: 'Tidak ada produk untuk diekspor',
+            confirmButtonColor: '#3b82f6'
+        });
+        return;
+    }
+
+    // Initialize jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Add header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('NANDA MOTOR', 105, 15, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    doc.text('Laporan Data Produk', 105, 22, { align: 'center' });
+
+    // Add date
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('id-ID', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    doc.setFontSize(9);
+    doc.text(`Dicetak: ${dateStr}`, 14, 30);
+
+    // Prepare table data
+    const tableData = products.map(p => {
+        const prefix = getKategoriPrefix(p.kategori);
+        const displayID = `${prefix}-${String(p.id).padStart(3, "0")}`;
+        const hargaFormatted = `Rp ${parseInt(p.harga).toLocaleString('id-ID')}`;
+        
+        return [
+            displayID,
+            p.nama_produk,
+            p.kategori,
+            hargaFormatted,
+            p.stok
+        ];
+    });
+
+    // Add table using autoTable
+    doc.autoTable({
+        startY: 35,
+        head: [['ID', 'Nama Produk', 'Kategori', 'Harga', 'Stok']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+            fillColor: [31, 41, 55], // gray-800
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            halign: 'center'
+        },
+        styles: {
+            fontSize: 9,
+            cellPadding: 3
+        },
+        columnStyles: {
+            0: { halign: 'center', cellWidth: 25 },
+            1: { halign: 'left', cellWidth: 70 },
+            2: { halign: 'center', cellWidth: 30 },
+            3: { halign: 'right', cellWidth: 35 },
+            4: { halign: 'center', cellWidth: 20 }
+        },
+        didDrawPage: function(data) {
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageSize = doc.internal.pageSize;
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            
+            doc.setFontSize(8);
+            doc.setTextColor(128);
+            doc.text(
+                `Halaman ${data.pageNumber} dari ${pageCount}`,
+                pageSize.width / 2,
+                pageHeight - 10,
+                { align: 'center' }
+            );
+        }
+    });
+
+    // Add summary at the end
+    const finalY = doc.lastAutoTable.finalY || 35;
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Total Produk: ${products.length}`, 14, finalY + 10);
+
+    // Save PDF
+    doc.save(`NandaMotor_Laporan_${getTimestamp()}.pdf`);
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: `Laporan PDF dengan ${products.length} produk berhasil dibuat`,
+        timer: 2000,
+        showConfirmButton: false
+    });
+};
