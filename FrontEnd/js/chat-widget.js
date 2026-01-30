@@ -109,6 +109,9 @@ class ChatWidget {
     closeChat() {
         this.chatWindow.classList.remove('show');
         console.log('❌ Chat window closed');
+        
+        // Stop polling saat chat ditutup
+        this.stopPolling();
     }
 
     handleStartChat() {
@@ -138,6 +141,9 @@ class ChatWidget {
         this.chatMessages.style.display = 'block';
         this.chatInput.style.display = 'flex';
         console.log('✅ Chat interface shown');
+        
+        // Start polling untuk terima balasan dari owner
+        this.startPolling();
     }
 
     async sendInitialGreeting() {
@@ -342,6 +348,64 @@ class ChatWidget {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * Start polling untuk terima balasan dari owner
+     */
+    startPolling() {
+        // Jangan polling jika belum ada customer info
+        if (!this.customerInfo) return;
+        
+        // Stop existing polling jika ada
+        this.stopPolling();
+        
+        console.log('🔄 Starting message polling...');
+        
+        // Poll setiap 3 detik
+        this.pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(
+                    `${API_URL}/api/whatsapp/messages/${this.sessionId}`,
+                    { method: 'GET' }
+                );
+                
+                const result = await response.json();
+                
+                if (result.success && result.messages && result.messages.length > 0) {
+                    console.log('📨 New messages received:', result.messages.length);
+                    
+                    // Tampilkan setiap pesan baru
+                    result.messages.forEach(msg => {
+                        this.addMessageToUI({
+                            message: msg.message,
+                            direction: 'incoming',
+                            created_at: msg.created_at
+                        });
+                    });
+                    
+                    // Update badge jika chat window tertutup
+                    if (!this.chatWindow.classList.contains('show')) {
+                        const currentBadge = parseInt(this.badge.textContent) || 0;
+                        this.badge.textContent = currentBadge + result.messages.length;
+                        this.badge.classList.add('show');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Polling error:', error);
+            }
+        }, 3000); // Poll setiap 3 detik
+    }
+
+    /**
+     * Stop polling
+     */
+    stopPolling() {
+        if (this.pollInterval) {
+            clearInterval(this.pollInterval);
+            this.pollInterval = null;
+            console.log('⏹️ Polling stopped');
+        }
     }
 
     async checkConnection() {

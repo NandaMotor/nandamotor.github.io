@@ -615,6 +615,106 @@ app.post("/api/whatsapp/contact-owner", async (req, res) => {
   }
 });
 
+// Endpoint untuk customer chat dengan bot (chatbot auto-reply)
+app.post("/api/whatsapp/send-reply", async (req, res) => {
+  const { from, message, messageId } = req.body;
+
+  if (!from || !message) {
+    return res.status(400).json({ error: "from dan message required" });
+  }
+
+  try {
+    console.log("📤 Customer message:", { from, message });
+
+    // Forward ke wa-bot untuk diproses chatbot
+    const response = await axios.post(
+      `${WA_BOT_API}/webhook/web-chat`,
+      {
+        sessionId: from,
+        message: message,
+        customerName: "Customer Website",
+        customerPhone: null,
+        customerEmail: null,
+        metadata: {
+          source: "website-chat",
+          timestamp: new Date().toISOString(),
+        },
+      },
+      { timeout: 5000 }
+    );
+
+    console.log("✅ WA Bot response:", response.data);
+
+    // Return success (chatbot akan proses di background)
+    res.json({
+      success: true,
+      reply: "Pesan Anda sedang diproses...",
+      messageId: response.data.data?.messageId || messageId,
+    });
+  } catch (error) {
+    console.error("❌ Error forwarding to WA Bot:", error.message);
+
+    res.status(503).json({
+      success: false,
+      error: "WhatsApp Bot sedang offline",
+      message: "Silakan coba lagi nanti",
+    });
+  }
+});
+
+// Endpoint untuk customer polling pesan baru dari owner
+app.get("/api/whatsapp/messages/:sessionId", async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    console.log("📥 Polling messages for session:", sessionId);
+
+    // Ambil pesan dari database web_chats
+    const query = `
+      SELECT 
+        message_id,
+        message,
+        direction,
+        admin_name,
+        created_at
+      FROM web_chats
+      WHERE session_id = ?
+      AND direction = 'outgoing'
+      AND is_read = 0
+      ORDER BY created_at ASC
+    `;
+
+    const [messages] = await db.query(query, [sessionId]);
+
+    // Mark messages as read
+    if (messages.length > 0) {
+      await db.query(
+        `UPDATE web_chats SET is_read = 1 WHERE session_id = ? AND direction = 'outgoing' AND is_read = 0`,
+        [sessionId]
+      );
+    }
+
+    res.json({
+      success: true,
+      messages: messages.map(msg => ({
+        messageId: msg.message_id,
+        message: msg.message,
+        direction: msg.direction,
+        adminName: msg.admin_name || "Owner",
+        created_at: msg.created_at,
+      })),
+      count: messages.length,
+    });
+  } catch (error) {
+    console.error("❌ Error polling messages:", error);
+    res.status(500).json({
+      success: false,
+      error: "Gagal mengambil pesan",
+    });
+  }
+});
+
+
 // Start server only if run directly (not imported for testing)
 if (require.main === module) {
   app.listen(PORT, () => {
